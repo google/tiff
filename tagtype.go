@@ -73,14 +73,15 @@ func (tt *tagType) Repr() func([]byte, binary.ByteOrder) string {
 
 // TODO: Implement the basic representation func for each default tag type.
 
-/* Default set of Tag types
-1-12:  Tag types 1 - 12 are described in [TIFF6].
-13-15: Tag Type IDs 13 - 15 are mentioned in [BIGTIFFDESIGN], but only to
-       explain why values 13 - 15 were skipped when identifying new Tag Types
-       for BigTIFF. These are meant to be used with regular TIFF, but were
-       apparently not properly documented prior to the BigTIFF design
-       discussion.
-16-18: Tag Type IDs 16 - 18 were added for use with BigTIFF in [BIGTIFFDESIGN].
+/*
+Default set of Tag types
+  1-12:  Tag types 1 - 12 are described in [TIFF6].
+  13-15: Tag Type IDs 13 - 15 are mentioned in [BIGTIFFDESIGN], but only to
+         explain why values 13 - 15 were skipped when identifying new Tag Types
+         for BigTIFF. These are meant to be used with regular TIFF, but were
+         apparently not properly documented prior to the BigTIFF design
+         discussion.
+  16-18: Tag Type IDs 16 - 18 were added for use with BigTIFF in [BIGTIFFDESIGN].
 */
 var (
 	// TTByte implements TagType with an Id of 1 and a composition of an
