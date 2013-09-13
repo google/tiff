@@ -2,7 +2,7 @@ package tiff
 
 type IFD struct {
 	NumEntries uint16
-	Tags       []Tag
+	Fields     []Field
 	NextOffset uint32
 
 	// The image data is not a part of the IFD.  It is always referenced by
@@ -14,14 +14,13 @@ type IFD struct {
 	// SubIFDs represents any IFDs that are considered SubIFDs of a top
 	// level IFD.  Not all implementations need or use this.  This is here
 	// for convenience since SubIFDs do not belong to the parent TIFF.
-	SubIFDs []*IFD
-
+	SubIFDs  []*IFD
 	PrivIFDs []*IFD
 }
 
 type IFD8 struct {
 	NumEntries uint64
-	Tags       []Tag8
+	Fields     []Field8
 	NextOffset uint64
 
 	// The image data is not a part of the IFD.  It is always referenced by
@@ -33,7 +32,6 @@ type IFD8 struct {
 	// SubIFDs represents any IFDs that are considered SubIFDs of a top
 	// level IFD.  Not all implementations need or use this.  This is here
 	// for convenience since SubIFDs do not belong to the parent TIFF.
-	SubIFDs []*IFD8
-
+	SubIFDs  []*IFD8
 	PrivIFDs []*IFD8
 }

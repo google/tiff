@@ -8,5 +8,9 @@ References:
   [GEOTIFF]:       http://www.remotesensing.org/geotiff/spec/geotiffhome.html
   [BIGTIFF]:       http://www.awaresystems.be/imaging/tiff/bigtiff.html
   [BIGTIFFDESIGN]: http://www.remotesensing.org/libtiff/bigtiffdesign.html
+
+TODO:
+  Implement the basic representation func for each default field type.
+  Add valid field types to all of the tags.
 */
 package tiff
