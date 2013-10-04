@@ -24,10 +24,10 @@ From [BIGTIFFDESIGN]:
 	15 = COMPLEX	??
 	16 = LONG8	64-bit unsigned integer.
 	17 = SLONG8	64-bit signed integer.
-	18 = IFD8	8-byte
+	18 = IFD8	64-bit unsigned integer offset value
 */
 
-// An FieldType represents all of the necessary pieces of information one needs to
+// A FieldType represents all of the necessary pieces of information one needs to
 // know about a field type including a function that knows how to represent that
 // type of data in an often human readable string.  Other string representation
 // formats could be implemented (json, xml, etc).  Field types themselves have no

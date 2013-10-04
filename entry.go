@@ -56,6 +56,14 @@ func (e *entry) ValueOffset() [4]byte {
 	return e.valueOffset
 }
 
+func parseEntry(br *bReader) (out Entry, err error) {
+	e := new(entry)
+	if err = br.Read(e); err != nil {
+		return
+	}
+	return e, nil
+}
+
 type Entry8 interface {
 	TagId() uint16
 	TypeId() uint16
@@ -85,4 +93,12 @@ func (e8 *entry8) Count() uint64 {
 
 func (e8 *entry8) ValueOffset() [8]byte {
 	return e8.valueOffset
+}
+
+func parseEntry8(br *bReader) (out Entry8, err error) {
+	e := new(entry8)
+	if err = br.Read(e); err != nil {
+		return
+	}
+	return e, nil
 }
