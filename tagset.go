@@ -6,32 +6,26 @@ import (
 )
 
 type TagSet interface {
-	RegisterTag(t Tag) error
-	GetTag(id uint16) Tag
+	GetTag(id uint16) (Tag, bool)
+	Name() string
 }
 
 type tagSet struct {
-	mu   sync.Mutex
+	name string
 	tags map[uint16]Tag
 }
 
-func (ts *tagSet) RegisterTag(t Tag) error {
-	return nil
+func (ts *tagSet) GetTag(id uint16) (Tag, bool) {
+	t, ok := ts.tags[id]
+	return t, ok
 }
 
-func (ts *tagSet) GetTag(id uint16) Tag {
-	ts.mu.Lock()
-	defer ts.mu.Unlock()
-	if t, ok := ts.tags[id]; ok {
-		return t
-	}
-	return &tag{
-		id:   id,
-		name: fmt.Sprintf("UnregisteredTag_%d", id),
-	}
+func (ts *tagSet) Name() string {
+	return ts.name
 }
 
-var defaultTags = &tagSet{
+var baselineTags = &tagSet{
+	name: "Baseline",
 	tags: map[uint16]Tag{
 		// Baseline TIFF Tags
 		254:   tagNewSubFileType,
@@ -70,7 +64,12 @@ var defaultTags = &tagSet{
 		320:   tagColorMap,
 		338:   tagExtraSamples,
 		33432: tagCopyright,
+	},
+}
 
+var extendedTags = &tagSet{
+	name: "Extended",
+	tags: map[uint16]Tag{
 		// Extension Tags
 		269:   tagDocumentName,
 		285:   tagPageName,
@@ -135,8 +134,57 @@ var defaultTags = &tagSet{
 	},
 }
 
-var DefaultTags TagSet = defaultTags
+type TagSetGroup interface {
+	Name() string
+	RegisterTagSet(ts TagSet) int
+	GetTagSet(id int) (TagSet, error)
+	GetTag(id uint16) Tag
+}
 
-func RegisterTag(t Tag) error {
-	return DefaultTags.RegisterTag(t)
+type tagSetGroup struct {
+	mu   sync.Mutex
+	name string
+	ts   []TagSet
+}
+
+func (tsg *tagSetGroup) Name() string {
+	return tsg.name
+}
+
+func (tsg *tagSetGroup) RegisterTagSet(ts TagSet) int {
+	tsg.mu.Lock()
+	defer tsg.mu.Unlock()
+	tsg.ts = append(tsg.ts, ts)
+	return len(tsg.ts) - 1
+}
+
+func (tsg *tagSetGroup) GetTagSet(id int) (TagSet, error) {
+	tsg.mu.Lock()
+	defer tsg.mu.Unlock()
+	if id >= len(tsg.ts) {
+		return nil, fmt.Errorf("tiff: no TagSet with an id of %d", id)
+	}
+	return tsg.ts[id], nil
+}
+
+func (tsg *tagSetGroup) GetTag(id uint16) Tag {
+	tsg.mu.Lock()
+	defer tsg.mu.Unlock()
+	for _, ts := range tsg.ts {
+		if t, ok := ts.GetTag(id); ok {
+			return t
+		}
+	}
+	return &tag{id: id}
+}
+
+var defTagSetGroup = &tagSetGroup{
+	name: "DefaultTagSetGroup",
+	ts:   []TagSet{baselineTags, extendedTags},
+}
+
+var DefaultTagSetGroup TagSetGroup = defTagSetGroup
+
+func RegisterTagSet(ts TagSet) int {
+	return DefaultTagSetGroup.RegisterTagSet(ts)
 }

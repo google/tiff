@@ -50,6 +50,9 @@ func ParseTIFF(r ReadAtReadSeeker) (out *TIFF, err error) {
 		if ifd, err = parseIFD(br, nextOffset); err != nil {
 			return
 		}
+		if err = ifd.processImageData(br); err != nil {
+			return
+		}
 		t.IFDs = append(t.IFDs, ifd)
 		nextOffset = ifd.NextOffset
 	}

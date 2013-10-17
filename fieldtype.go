@@ -36,7 +36,7 @@ From [BIGTIFFDESIGN]:
 type FieldType interface {
 	Id() uint16
 	Name() string
-	Size() uint64
+	Size() uint32
 	Signed() bool
 	Repr() func([]byte, binary.ByteOrder) string
 }
@@ -44,7 +44,7 @@ type FieldType interface {
 type fieldType struct {
 	id     uint16
 	name   string
-	size   uint64
+	size   uint32
 	signed bool
 	repr   func([]byte, binary.ByteOrder) string
 }
@@ -57,7 +57,7 @@ func (ft *fieldType) Name() string {
 	return ft.name
 }
 
-func (ft *fieldType) Size() uint64 {
+func (ft *fieldType) Size() uint32 {
 	return ft.size
 }
 

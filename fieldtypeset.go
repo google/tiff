@@ -12,10 +12,12 @@ import (
 type FieldTypeSet interface {
 	Register(ft FieldType) error
 	GetType(id uint16) FieldType
+	Name() string
 }
 
 type fieldTypeSet struct {
 	mu    sync.Mutex
+	name  string
 	types map[uint16]FieldType
 }
 
@@ -59,6 +61,10 @@ func (fts *fieldTypeSet) GetType(id uint16) FieldType {
 	}
 }
 
+func (fts *fieldTypeSet) Name() string {
+	return fts.name
+}
+
 // Note: We could create key and value pairs in the map by doing:
 //     fTByte.Id(): fTByte,
 // However, we know these values to be accurate with the implementations defined
@@ -66,6 +72,7 @@ func (fts *fieldTypeSet) GetType(id uint16) FieldType {
 // should double check the values used above in the struct definition and here
 // in the map key.
 var defFieldTypes = &fieldTypeSet{
+	name: "DefaultFieldTypes",
 	types: map[uint16]FieldType{
 		1:  fTByte,
 		2:  fTASCII,
@@ -100,4 +107,28 @@ var DefaultFieldTypes FieldTypeSet = defFieldTypes
 // do not conflict with existing field parameters.
 func RegisterFieldType(ft FieldType) error {
 	return DefaultFieldTypes.Register(ft)
+}
+
+var fieldTypeSets = struct {
+	mu  sync.Mutex
+	fts map[string]FieldTypeSet
+}{
+	fts: map[string]FieldTypeSet{DefaultFieldTypes.Name(): DefaultFieldTypes},
+}
+
+func RegisterFieldTypeSet(fts FieldTypeSet) error {
+	fieldTypeSets.mu.Lock()
+	defer fieldTypeSets.mu.Unlock()
+	_, ok := fieldTypeSets.fts[fts.Name()]
+	if ok {
+		return fmt.Errorf("tiff: FieldTypeSet %q already registered.")
+	}
+	fieldTypeSets.fts[fts.Name()] = fts
+	return nil
+}
+
+func GetFieldTypeSet(name string) (FieldTypeSet, error) {
+	fieldTypeSets.mu.Lock()
+	defer fieldTypeSets.mu.Unlock()
+	return nil, nil
 }

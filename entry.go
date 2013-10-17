@@ -1,5 +1,9 @@
 package tiff
 
+import (
+	"fmt"
+)
+
 /*
 Entry structure
   For IFD/Entry:
@@ -56,9 +60,22 @@ func (e *entry) ValueOffset() [4]byte {
 	return e.valueOffset
 }
 
+func (e *entry) String() string {
+	return fmt.Sprintf("<TagId: %5d, TypeId: %5d, Count: %d, ValueOffset: %v>", e.tagId, e.typeId, e.count, e.valueOffset)
+}
+
 func parseEntry(br *bReader) (out Entry, err error) {
 	e := new(entry)
-	if err = br.Read(e); err != nil {
+	if err = br.Read(&e.tagId); err != nil {
+		return
+	}
+	if err = br.Read(&e.typeId); err != nil {
+		return
+	}
+	if err = br.Read(&e.count); err != nil {
+		return
+	}
+	if err = br.Read(&e.valueOffset); err != nil {
 		return
 	}
 	return e, nil
@@ -95,9 +112,22 @@ func (e8 *entry8) ValueOffset() [8]byte {
 	return e8.valueOffset
 }
 
+func (e8 *entry8) String() string {
+	return fmt.Sprintf("<TagId: %5d, TypeId: %5d, Count: %d, ValueOffset: %v>", e8.tagId, e8.typeId, e8.count, e8.valueOffset)
+}
+
 func parseEntry8(br *bReader) (out Entry8, err error) {
 	e := new(entry8)
-	if err = br.Read(e); err != nil {
+	if err = br.Read(&e.tagId); err != nil {
+		return
+	}
+	if err = br.Read(&e.typeId); err != nil {
+		return
+	}
+	if err = br.Read(&e.count); err != nil {
+		return
+	}
+	if err = br.Read(&e.valueOffset); err != nil {
 		return
 	}
 	return e, nil

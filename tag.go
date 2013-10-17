@@ -1,5 +1,9 @@
 package tiff
 
+import (
+	"fmt"
+)
+
 type Tag interface {
 	Id() uint16
 	Name() string
@@ -17,7 +21,10 @@ func (t *tag) Id() uint16 {
 }
 
 func (t *tag) Name() string {
-	return t.name
+	if len(t.name) > 0 {
+		return t.name
+	}
+	return fmt.Sprintf("Unnamed_%d", t.id)
 }
 
 func (t *tag) ValidFieldTypes() []FieldType {
@@ -122,8 +129,10 @@ var (
 	tagReferenceBlackWhite         = &tag{id: 532, name: "ReferenceBlackWhite", validFTs: []FieldType{}}
 	tagStripRowCounts              = &tag{id: 559, name: "StripRowCounts", validFTs: []FieldType{}}
 	tagXMP                         = &tag{id: 700, name: "XMP", validFTs: []FieldType{}}
-	tagImageID                     = &tag{id: 32781, name: "ImageID", validFTs: []FieldType{}}
-	tagImageLayer                  = &tag{id: 34732, name: "ImageLayer", validFTs: []FieldType{}}
 
-	// Private Tags
+	// Private Tags >= 32768
+	tagImageID    = &tag{id: 32781, name: "ImageID", validFTs: []FieldType{}}
+	tagImageLayer = &tag{id: 34732, name: "ImageLayer", validFTs: []FieldType{}}
+
+	// Reusable Tags >= 65000
 )

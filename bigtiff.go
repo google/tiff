@@ -67,6 +67,10 @@ func ParseBigTIFF(r ReadAtReadSeeker) (out *BigTIFF, err error) {
 		if ifd, err = parseIFD8(br, nextOffset); err != nil {
 			return
 		}
+		if err = ifd.processImageData(br); err != nil {
+			return
+		}
+
 		bt.IFDs = append(bt.IFDs, ifd)
 		nextOffset = ifd.NextOffset
 	}

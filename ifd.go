@@ -20,6 +20,18 @@ type IFD struct {
 	PrivIFDs []*IFD
 }
 
+func (ifd *IFD) processSubIFDs(br *bReader) error {
+	return nil
+}
+
+func (ifd *IFD) processPrivIFDs(br *bReader) error {
+	return nil
+}
+
+func (ifd *IFD) processImageData(br *bReader) error {
+	return nil
+}
+
 func parseIFD(br *bReader, offset uint32) (out *IFD, err error) {
 	ifd := new(IFD)
 	br.Seek(int64(offset), 0)
@@ -57,6 +69,10 @@ type IFD8 struct {
 	// for convenience since SubIFDs do not belong to the parent TIFF.
 	SubIFDs  []*IFD8
 	PrivIFDs []*IFD8
+}
+
+func (ifd8 *IFD8) processImageData(br *bReader) error {
+	return nil
 }
 
 func parseIFD8(br *bReader, offset uint64) (out *IFD8, err error) {

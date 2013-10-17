@@ -2,6 +2,7 @@ package tiff
 
 import (
 	"encoding/binary"
+	"fmt"
 )
 
 type FieldValue interface {
@@ -26,6 +27,7 @@ type Field interface {
 	Tag() Tag
 	Type() FieldType
 	Count() uint32
+	Offset() uint32
 	Value() FieldValue
 }
 
@@ -38,36 +40,59 @@ type field struct {
 	// Then value will be used to hold the bytes associated with those values.
 	value FieldValue
 
-	// etSet is the FieldTypeSet that can be used to look up the FieldType
-	// that corresponds to the typeId of this entry.  If etSet is nil, the
+	// fts is the FieldTypeSet that can be used to look up the FieldType
+	// that corresponds to the typeId of this entry.  If fts is nil, the
 	// default set DefaultFieldTypes is used instead.
-	etSet FieldTypeSet
+	fts FieldTypeSet
 
-	// tSet is the TagSet that can be used to look up the Tag that
+	// tSet is the TagSetGroup that can be used to look up the Tag that
 	// corresponds to the result of entry.TagId().
-	tSet TagSet
+	tsg TagSetGroup
 }
 
 func (f *field) Tag() Tag {
-	if f.tSet == nil {
-		return DefaultTags.GetTag(f.entry.TagId())
+	if f.tsg == nil {
+		return DefaultTagSetGroup.GetTag(f.entry.TagId())
 	}
-	return f.tSet.GetTag(f.entry.TagId())
+	return f.tsg.GetTag(f.entry.TagId())
 }
 
 func (f *field) Type() FieldType {
-	if f.etSet == nil {
+	if f.fts == nil {
 		return DefaultFieldTypes.GetType(f.entry.TypeId())
 	}
-	return f.etSet.GetType(f.entry.TypeId())
+	return f.fts.GetType(f.entry.TypeId())
 }
 
 func (f *field) Count() uint32 {
 	return f.entry.Count()
 }
 
+func (f *field) Offset() uint32 {
+	if f.Type().Size()*f.Count() <= 4 {
+		return 0
+	}
+	offsetBytes := f.entry.ValueOffset()
+	return f.Value().Order().Uint32(offsetBytes[:])
+}
+
 func (f *field) Value() FieldValue {
 	return f.value
+}
+
+func (f *field) String() string {
+	var (
+		theTSet  TagSetGroup  = f.tsg
+		theFTSet FieldTypeSet = f.fts
+	)
+	if f.tsg == nil {
+		theTSet = DefaultTagSetGroup
+	}
+	if f.fts == nil {
+		theFTSet = DefaultFieldTypes
+	}
+	return fmt.Sprintf("<Tag: %v, Type: %v, Count: %d, Offset: %d, Value: %v, FieldTypeSet: %q, TagSetGroup: %q>",
+		f.Tag().Name(), f.Type().Name(), f.Count(), f.Offset(), f.Value().Bytes(), theFTSet.Name(), theTSet.Name())
 }
 
 func parseField(br *bReader) (out Field, err error) {
@@ -75,13 +100,19 @@ func parseField(br *bReader) (out Field, err error) {
 	if f.entry, err = parseEntry(br); err != nil {
 		return
 	}
-	// TODO: Implement grabbing the value.  For now, just use the bytes from
-	// the ValueOffset.
-	valOff := f.entry.ValueOffset()
-	f.value = &fieldValue{
-		order: br.order,
-		value: valOff[:],
+	fv := &fieldValue{order: br.order}
+	valSize := int64(f.Count()) * int64(f.Type().Size())
+	valOffBytes := f.entry.ValueOffset()
+	if valSize > 4 {
+		fv.value = make([]byte, valSize)
+		offset := int64(br.order.Uint32(valOffBytes[:]))
+		if err = br.ReadSection(offset, valSize, &fv.value); err != nil {
+			return
+		}
+	} else {
+		fv.value = valOffBytes[:]
 	}
+	f.value = fv
 	return f, nil
 }
 
@@ -89,6 +120,7 @@ type Field8 interface {
 	Tag() Tag
 	Type() FieldType
 	Count() uint64
+	Offset() uint64
 	Value() FieldValue
 }
 
@@ -101,32 +133,40 @@ type field8 struct {
 	// Then value will hold the bytes associated with those values.
 	value FieldValue
 
-	// etSet is the FieldTypeSet that can be used to look up the FieldType
-	// that corresponds to the typeId of this entry.  If etSet is nil, the
+	// fts is the FieldTypeSet that can be used to look up the FieldType
+	// that corresponds to the typeId of this entry.  If fts is nil, the
 	// default set DefaultFieldTypes is used instead.
-	etSet FieldTypeSet
+	fts FieldTypeSet
 
-	// tSet is the TagSet that can be used to look up the Tag that
+	// tsg is the TagSetGroup that can be used to look up the Tag that
 	// corresponds to the result of entry.TagId().
-	tSet TagSet
+	tsg TagSetGroup
 }
 
 func (f8 *field8) Tag() Tag {
-	if f8.tSet == nil {
-		return DefaultTags.GetTag(f8.entry.TagId())
+	if f8.tsg == nil {
+		return DefaultTagSetGroup.GetTag(f8.entry.TagId())
 	}
-	return f8.tSet.GetTag(f8.entry.TagId())
+	return f8.tsg.GetTag(f8.entry.TagId())
 }
 
 func (f8 *field8) Type() FieldType {
-	if f8.etSet == nil {
+	if f8.fts == nil {
 		return DefaultFieldTypes.GetType(f8.entry.TypeId())
 	}
-	return f8.etSet.GetType(f8.entry.TypeId())
+	return f8.fts.GetType(f8.entry.TypeId())
 }
 
 func (f8 *field8) Count() uint64 {
 	return f8.entry.Count()
+}
+
+func (f8 *field8) Offset() uint64 {
+	if uint64(f8.Type().Size())*f8.Count() <= 8 {
+		return 0
+	}
+	offsetBytes := f8.entry.ValueOffset()
+	return f8.Value().Order().Uint64(offsetBytes[:])
 }
 
 func (f8 *field8) Value() FieldValue {
