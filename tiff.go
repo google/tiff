@@ -5,14 +5,14 @@ import (
 	"fmt"
 )
 
-type TIFFHeader struct {
+type Header struct {
 	Order       uint16 // "MM" or "II"
 	Version     uint16 // Must be 42 (0x2A)
 	FirstOffset uint32 // Offset location for IFD 0
 }
 
 type TIFF struct {
-	TIFFHeader
+	Header
 	IFDs []IFD
 	R    BReader
 }
@@ -29,41 +29,41 @@ func ParseTIFF(r ReadAtReadSeeker, tsp TagSpace, fts FieldTypeSet) (out *TIFF, e
 		fts = DefaultFieldTypes
 	}
 
-	var th TIFFHeader
+	var hdr Header
 
 	// Get the byte order
-	if err = binary.Read(r, binary.BigEndian, &th.Order); err != nil {
+	if err = binary.Read(r, binary.BigEndian, &hdr.Order); err != nil {
 		return
 	}
 	// Check the byte order
-	order := GetByteOrder(th.Order)
+	order := GetByteOrder(hdr.Order)
 	if order == nil {
-		return nil, fmt.Errorf("tiff: invalid byte order %q", []byte{byte(th.Order >> 8), byte(th.Order)})
+		return nil, fmt.Errorf("tiff: invalid byte order %q", []byte{byte(hdr.Order >> 8), byte(hdr.Order)})
 	}
 
 	br := NewBReader(r, order)
 
 	// Get the TIFF type
-	if err = br.BRead(&th.Version); err != nil {
+	if err = br.BRead(&hdr.Version); err != nil {
 		return
 	}
 	// Check the type (42 for TIFF)
-	if th.Version != Version {
-		return nil, fmt.Errorf("tiff: unsupported version %d", th.Version)
+	if hdr.Version != Version {
+		return nil, fmt.Errorf("tiff: unsupported version %d", hdr.Version)
 	}
 
 	// Get the offset to the first IFD
-	if err = br.BRead(&th.FirstOffset); err != nil {
+	if err = br.BRead(&hdr.FirstOffset); err != nil {
 		return
 	}
 	// Check the offset to the first IFD (ensure it is past the end of the header)
-	if th.FirstOffset < 8 {
-		return nil, fmt.Errorf("tiff: invalid offset to first IFD, %d < 8", th.FirstOffset)
+	if hdr.FirstOffset < 8 {
+		return nil, fmt.Errorf("tiff: invalid offset to first IFD, %d < 8", hdr.FirstOffset)
 	}
 
 	t := &TIFF{
-		TIFFHeader: th,
-		R:          br,
+		Header: hdr,
+		R:      br,
 	}
 
 	// Locate and process IFDs
