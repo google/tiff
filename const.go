@@ -34,6 +34,6 @@ func getByteOrder(bo uint16) binary.ByteOrder {
 // These constants represent the TIFF file type identifiers.  At present,
 // there are values for a TIFF and a BigTIFF.
 const (
-	TypeTIFF    uint16 = 0x2A
-	TypeBigTIFF uint16 = 0x2B
+	VersionTIFF    uint16 = 0x2A
+	VersionBigTIFF uint16 = 0x2B
 )

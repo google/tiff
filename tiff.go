@@ -7,7 +7,7 @@ import (
 
 type TIFFHeader struct {
 	Order       uint16 // "MM" or "II"
-	Type        uint16 // Must be 42 (0x2A)
+	Version     uint16 // Must be 42 (0x2A)
 	FirstOffset uint32 // Offset location for IFD 0
 }
 
@@ -44,12 +44,12 @@ func ParseTIFF(r ReadAtReadSeeker, tsp TagSpace, fts FieldTypeSet) (out *TIFF, e
 	br := NewBReader(r, order)
 
 	// Get the TIFF type
-	if err = br.BRead(&th.Type); err != nil {
+	if err = br.BRead(&th.Version); err != nil {
 		return
 	}
 	// Check the type (42 for TIFF)
-	if th.Type != TypeTIFF {
-		return nil, fmt.Errorf("tiff: invalid type %d", th.Type)
+	if th.Version != VersionTIFF {
+		return nil, fmt.Errorf("tiff: unsupported version %d", th.Version)
 	}
 
 	// Get the offset to the first IFD

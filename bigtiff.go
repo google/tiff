@@ -7,7 +7,7 @@ import (
 
 type BigTIFFHeader struct {
 	Order       uint16 // "MM" or "II"
-	Type        uint16 // Must be 43 (0x2B)
+	Version     uint16 // Must be 43 (0x2B)
 	OffsetSize  uint16 // Size in bytes used for offset values
 	Constant    uint16 // Must be 0
 	FirstOffset uint64 // Offset location for IFD 0
@@ -53,12 +53,12 @@ func ParseBigTIFF(r ReadAtReadSeeker, tsg TagSpace, fts FieldTypeSet) (out *BigT
 	br := NewBReader(r, order)
 
 	// Get the TIFF type
-	if err = br.BRead(&bth.Type); err != nil {
+	if err = br.BRead(&bth.Version); err != nil {
 		return
 	}
 	// Check the type (43 for BigTIFF)
-	if bth.Type != TypeBigTIFF {
-		return nil, fmt.Errorf("tiff: invalid type %d", bth.Type)
+	if bth.Version != VersionBigTIFF {
+		return nil, fmt.Errorf("tiff: unsupported version %d", bth.Version)
 	}
 
 	// Get the offset size
