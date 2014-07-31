@@ -131,7 +131,7 @@ func RegisterFieldTypeSet(fts FieldTypeSet) error {
 	defer fieldTypeSets.mu.Unlock()
 	_, ok := fieldTypeSets.fts[fts.Name()]
 	if ok {
-		return fmt.Errorf("tiff: FieldTypeSet %q already registered.")
+		return fmt.Errorf("tiff: FieldTypeSet %q already registered")
 	}
 	fieldTypeSets.fts[fts.Name()] = fts
 	return nil
