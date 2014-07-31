@@ -97,13 +97,13 @@ func (f *field) Value() FieldValue {
 
 func (f *field) String() string {
 	var (
-		theTSet  TagSpace     = f.tsg
-		theFTSet FieldTypeSet = f.fts
+		theTSet  = f.tsg
+		theFTSet = f.fts
 	)
-	if f.tsg == nil {
+	if theTSet == nil {
 		theTSet = DefaultTagSpace
 	}
-	if f.fts == nil {
+	if theFTSet == nil {
 		theFTSet = DefaultFieldTypes
 	}
 	var valueRep string
