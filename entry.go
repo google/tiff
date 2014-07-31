@@ -1,6 +1,7 @@
 package tiff
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -29,6 +30,8 @@ Entry structure
 	             file, even after the image data.
 */
 
+// Entry represents a single entry in an IFD in a TIFF file.  This is the mostly
+// uninterpreted core 12 byte data structure only.
 type Entry interface {
 	TagId() uint16
 	TypeId() uint16
@@ -64,23 +67,40 @@ func (e *entry) String() string {
 	return fmt.Sprintf("<TagId: %5d, TypeId: %5d, Count: %d, ValueOffset: %v>", e.tagId, e.typeId, e.count, e.valueOffset)
 }
 
-func parseEntry(br *bReader) (out Entry, err error) {
+func (e *entry) MarshalJSON() ([]byte, error) {
+	tmp := struct {
+		Tag         uint16  `json:"tagId"`
+		Type        uint16  `json:"typeId"`
+		Count       uint32  `json:"count"`
+		ValueOffset [4]byte `json:"valueOffset"`
+	}{
+		Tag:         e.tagId,
+		Type:        e.typeId,
+		Count:       e.count,
+		ValueOffset: e.valueOffset,
+	}
+	return json.Marshal(tmp)
+}
+
+func ParseEntry(br BReader) (out Entry, err error) {
 	e := new(entry)
-	if err = br.Read(&e.tagId); err != nil {
+	if err = br.BRead(&e.tagId); err != nil {
 		return
 	}
-	if err = br.Read(&e.typeId); err != nil {
+	if err = br.BRead(&e.typeId); err != nil {
 		return
 	}
-	if err = br.Read(&e.count); err != nil {
+	if err = br.BRead(&e.count); err != nil {
 		return
 	}
-	if err = br.Read(&e.valueOffset); err != nil {
+	if err = br.BRead(&e.valueOffset); err != nil {
 		return
 	}
 	return e, nil
 }
 
+// Entry8 represents a single entry in an IFD8 in a BigTIFF file.  This is the
+// mostly uninterpreted core 20 byte data structure only.
 type Entry8 interface {
 	TagId() uint16
 	TypeId() uint16
@@ -116,18 +136,33 @@ func (e8 *entry8) String() string {
 	return fmt.Sprintf("<TagId: %5d, TypeId: %5d, Count: %d, ValueOffset: %v>", e8.tagId, e8.typeId, e8.count, e8.valueOffset)
 }
 
-func parseEntry8(br *bReader) (out Entry8, err error) {
+func (e8 *entry8) MarshalJSON() ([]byte, error) {
+	tmp := struct {
+		Tag         uint16  `json:"tagId"`
+		Type        uint16  `json:"typeId"`
+		Count       uint64  `json:"count"`
+		ValueOffset [8]byte `json:"valueOffset"`
+	}{
+		Tag:         e8.tagId,
+		Type:        e8.typeId,
+		Count:       e8.count,
+		ValueOffset: e8.valueOffset,
+	}
+	return json.Marshal(tmp)
+}
+
+func ParseEntry8(br BReader) (out Entry8, err error) {
 	e := new(entry8)
-	if err = br.Read(&e.tagId); err != nil {
+	if err = br.BRead(&e.tagId); err != nil {
 		return
 	}
-	if err = br.Read(&e.typeId); err != nil {
+	if err = br.BRead(&e.typeId); err != nil {
 		return
 	}
-	if err = br.Read(&e.count); err != nil {
+	if err = br.BRead(&e.count); err != nil {
 		return
 	}
-	if err = br.Read(&e.valueOffset); err != nil {
+	if err = br.BRead(&e.valueOffset); err != nil {
 		return
 	}
 	return e, nil

@@ -2,6 +2,10 @@ package tiff
 
 import (
 	"encoding/binary"
+	"encoding/json"
+	"fmt"
+	"math"
+	"math/big"
 )
 
 /* Field type definitions
@@ -41,6 +45,10 @@ type FieldType interface {
 	Repr() func([]byte, binary.ByteOrder) string
 }
 
+func NewFieldType(id uint16, name string, size uint32, signed bool, repr func([]byte, binary.ByteOrder) string) FieldType {
+	return &fieldType{id: id, name: name, size: size, signed: signed, repr: repr}
+}
+
 type fieldType struct {
 	id     uint16
 	name   string
@@ -69,6 +77,41 @@ func (ft *fieldType) Repr() func([]byte, binary.ByteOrder) string {
 	return ft.repr
 }
 
+func (ft *fieldType) MarshalJSON() ([]byte, error) {
+	tmp := struct {
+		Id     uint16
+		Name   string
+		Size   uint32
+		Signed bool
+	}{
+		Id:     ft.id,
+		Name:   ft.name,
+		Size:   ft.size,
+		Signed: ft.signed,
+	}
+	return json.Marshal(tmp)
+}
+
+func reprByte(in []byte, bo binary.ByteOrder) string   { return fmt.Sprintf("%d", in[0]) }
+func reprSByte(in []byte, bo binary.ByteOrder) string  { return fmt.Sprintf("%d", int8(in[0])) }
+func reprAscii(in []byte, bo binary.ByteOrder) string  { return string(in) }
+func reprShort(in []byte, bo binary.ByteOrder) string  { return fmt.Sprintf("%d", bo.Uint16(in)) }
+func reprSShort(in []byte, bo binary.ByteOrder) string { return fmt.Sprintf("%d", int16(bo.Uint16(in))) }
+func reprLong(in []byte, bo binary.ByteOrder) string   { return fmt.Sprintf("%d", bo.Uint32(in)) }
+func reprSLong(in []byte, bo binary.ByteOrder) string  { return fmt.Sprintf("%d", int32(bo.Uint32(in))) }
+func reprRational(in []byte, bo binary.ByteOrder) string {
+	return big.NewRat(int64(bo.Uint32(in)), int64(bo.Uint32(in[4:]))).String()
+}
+func reprSRational(in []byte, bo binary.ByteOrder) string {
+	return big.NewRat(int64(int32(bo.Uint32(in))), int64(int32(bo.Uint32(in[4:])))).String()
+}
+func reprFloat(in []byte, bo binary.ByteOrder) string {
+	return fmt.Sprintf("%f", math.Float32frombits(bo.Uint32(in)))
+}
+func reprDouble(in []byte, bo binary.ByteOrder) string {
+	return fmt.Sprintf("%f", math.Float64frombits(bo.Uint64(in)))
+}
+
 /*
 Default set of Field types
   1-12:  Field types 1 - 12 are described in [TIFF6].
@@ -80,22 +123,26 @@ Default set of Field types
   16-18: Field Type IDs 16 - 18 were added for use with BigTIFF in [BIGTIFFDESIGN].
 */
 var (
-	fTByte      = &fieldType{id: 1, name: "BYTE", size: 1, signed: false, repr: nil}
-	fTASCII     = &fieldType{id: 2, name: "ASCII", size: 1, signed: false, repr: nil}
-	fTShort     = &fieldType{id: 3, name: "SHORT", size: 2, signed: false, repr: nil}
-	fTLong      = &fieldType{id: 4, name: "LONG", size: 4, signed: false, repr: nil}
-	fTRational  = &fieldType{id: 5, name: "RATIONAL", size: 8, signed: false, repr: nil}
-	fTSByte     = &fieldType{id: 6, name: "SBYTE", size: 1, signed: true, repr: nil}
-	fTUndefined = &fieldType{id: 7, name: "UNDEFINED", size: 1, signed: false, repr: nil}
-	fTSShort    = &fieldType{id: 8, name: "SSHORT", size: 2, signed: true, repr: nil}
-	fTSLong     = &fieldType{id: 9, name: "SLONG", size: 4, signed: true, repr: nil}
-	fTSRational = &fieldType{id: 10, name: "SRATIONAL", size: 8, signed: true, repr: nil}
-	fTFloat     = &fieldType{id: 11, name: "FLOAT", size: 4, signed: true, repr: nil}
-	fTDouble    = &fieldType{id: 12, name: "DOUBLE", size: 8, signed: true, repr: nil}
-	fTIFD       = &fieldType{id: 13, name: "IFD", size: 4, signed: false, repr: nil}     // TODO: Double check parameters.
-	fTUnicode   = &fieldType{id: 14, name: "UNICODE", size: 4, signed: false, repr: nil} // TODO: Double check parameters.
-	fTComplex   = &fieldType{id: 15, name: "COMPLEX", size: 8, signed: true, repr: nil}  // TODO: Double check parameters.
-	fTLong8     = &fieldType{id: 16, name: "LONG8", size: 8, signed: false, repr: nil}
-	fTSLong8    = &fieldType{id: 17, name: "SLONG8", size: 8, signed: true, repr: nil}
-	fTIFD8      = &fieldType{id: 18, name: "IFD8", size: 8, signed: false, repr: nil}
+	FTByte      = NewFieldType(1, "BYTE", 1, false, reprByte)
+	FTAscii     = NewFieldType(2, "ASCII", 1, false, reprAscii)
+	FTShort     = NewFieldType(3, "SHORT", 2, false, reprShort)
+	FTLong      = NewFieldType(4, "LONG", 4, false, reprLong)
+	FTRational  = NewFieldType(5, "RATIONAL", 8, false, reprRational)
+	FTSByte     = NewFieldType(6, "SBYTE", 1, true, reprSByte)
+	FTUndefined = NewFieldType(7, "UNDEFINED", 1, false, reprByte)
+	FTSShort    = NewFieldType(8, "SSHORT", 2, true, reprSShort)
+	FTSLong     = NewFieldType(9, "SLONG", 4, true, reprSLong)
+	FTSRational = NewFieldType(10, "SRATIONAL", 8, true, reprSRational)
+	FTFloat     = NewFieldType(11, "FLOAT", 4, true, reprFloat)
+	FTDouble    = NewFieldType(12, "DOUBLE", 8, true, reprDouble)
+
+	// Not well defined
+	FTIFD     = NewFieldType(13, "IFD", 4, false, nil)     // TODO: Double check parameters.
+	FTUnicode = NewFieldType(14, "UNICODE", 4, false, nil) // TODO: Double check parameters.
+	FTComplex = NewFieldType(15, "COMPLEX", 8, true, nil)  // TODO: Double check parameters.
+
+	//BigTIFF
+	FTLong8  = NewFieldType(16, "LONG8", 8, false, nil)
+	FTSLong8 = NewFieldType(17, "SLONG8", 8, true, nil)
+	FTIFD8   = NewFieldType(18, "IFD8", 8, false, nil)
 )

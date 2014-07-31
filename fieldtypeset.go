@@ -2,6 +2,7 @@ package tiff
 
 import (
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"sync"
 )
@@ -65,6 +66,15 @@ func (fts *fieldTypeSet) Name() string {
 	return fts.name
 }
 
+func (fts *fieldTypeSet) MarshalJSON() ([]byte, error) {
+	tmp := struct {
+		Name string
+	}{
+		Name: fts.name,
+	}
+	return json.Marshal(tmp)
+}
+
 // Note: We could create key and value pairs in the map by doing:
 //     fTByte.Id(): fTByte,
 // However, we know these values to be accurate with the implementations defined
@@ -72,26 +82,26 @@ func (fts *fieldTypeSet) Name() string {
 // should double check the values used above in the struct definition and here
 // in the map key.
 var defFieldTypes = &fieldTypeSet{
-	name: "DefaultFieldTypes",
+	name: "Default",
 	types: map[uint16]FieldType{
-		1:  fTByte,
-		2:  fTASCII,
-		3:  fTShort,
-		4:  fTLong,
-		5:  fTRational,
-		6:  fTSByte,
-		7:  fTUndefined,
-		8:  fTSShort,
-		9:  fTSLong,
-		10: fTSRational,
-		11: fTFloat,
-		12: fTDouble,
-		13: fTIFD,
-		14: fTUnicode,
-		15: fTComplex,
-		16: fTLong8,
-		17: fTSLong8,
-		18: fTIFD8,
+		1:  FTByte,
+		2:  FTAscii,
+		3:  FTShort,
+		4:  FTLong,
+		5:  FTRational,
+		6:  FTSByte,
+		7:  FTUndefined,
+		8:  FTSShort,
+		9:  FTSLong,
+		10: FTSRational,
+		11: FTFloat,
+		12: FTDouble,
+		13: FTIFD,
+		14: FTUnicode,
+		15: FTComplex,
+		16: FTLong8,
+		17: FTSLong8,
+		18: FTIFD8,
 	},
 }
 

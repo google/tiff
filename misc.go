@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+
 	"sync"
 )
 
@@ -75,10 +76,12 @@ func (b *buffer) Seek(offset int64, whence int) (int64, error) {
 	// In this package, we only plan to support cases 0 & 1 with case 0
 	// being the default and case 1 explicit option.  Case 2 would require
 	// loading the entire contents into memory or trying to assert b.r as
-	// an os.File or an io.Seeker.
+	// an *os.File or an io.Seeker.
 	switch whence {
 	case 1:
 		newPos = b.pos + int(offset)
+	case 2:
+		return 0, fmt.Errorf("tiff: seeking from the end of file is not supported")
 	default:
 		newPos = int(offset)
 	}
@@ -113,6 +116,18 @@ func NewReadAtReadSeeker(r io.Reader) ReadAtReadSeeker {
 	}
 }
 
+// BReader wraps a ReadAtReadSeeker with a specific binary.ByteOrder.
+type BReader interface {
+	BRead(data interface{}) error
+	BReadSection(data interface{}, offset int64, n int64) error
+	Order() binary.ByteOrder
+	ReadAtReadSeeker
+}
+
+func NewBReader(r ReadAtReadSeeker, o binary.ByteOrder) BReader {
+	return &bReader{order: o, r: r}
+}
+
 // bReader wraps a ReadAtReadSeeker and reads it with a specific
 // binary.ByteOrder.
 type bReader struct {
@@ -120,11 +135,19 @@ type bReader struct {
 	r     ReadAtReadSeeker
 }
 
-func (b *bReader) Read(data interface{}) error {
+func (b *bReader) Read(p []byte) (n int, err error) {
+	return b.r.Read(p)
+}
+
+func (b *bReader) ReadAt(p []byte, off int64) (n int, err error) {
+	return b.r.ReadAt(p, off)
+}
+
+func (b *bReader) BRead(data interface{}) error {
 	return binary.Read(b.r, b.order, data)
 }
 
-func (b *bReader) ReadSection(offset int64, n int64, data interface{}) error {
+func (b *bReader) BReadSection(data interface{}, offset int64, n int64) error {
 	if offset < 0 {
 		return fmt.Errorf("tiff: invalid offset %d", offset)
 	}
@@ -138,3 +161,13 @@ func (b *bReader) ReadSection(offset int64, n int64, data interface{}) error {
 func (b *bReader) Seek(offset int64, whence int) (int64, error) {
 	return b.r.Seek(offset, whence)
 }
+
+func (b *bReader) Order() binary.ByteOrder {
+	return b.order
+}
+
+type uint16Slice []uint16
+
+func (p uint16Slice) Len() int           { return len(p) }
+func (p uint16Slice) Less(i, j int) bool { return p[i] < p[j] }
+func (p uint16Slice) Swap(i, j int)      { p[i], p[j] = p[j], p[i] }

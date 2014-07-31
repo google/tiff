@@ -5,75 +5,102 @@ import (
 	"fmt"
 )
 
-type BigTIFF struct {
-	byteOrder   uint16 // "MM" or "II"
+type BigTIFFHeader struct {
+	Order       uint16 // "MM" or "II"
 	Type        uint16 // Must be 43 (0x2B)
 	OffsetSize  uint16 // Size in bytes used for offset values
 	Constant    uint16 // Must be 0
 	FirstOffset uint64 // Offset location for IFD 0
-	IFDs        []*IFD8
+}
+
+type BigTIFF struct {
+	BigTIFFHeader
+	IFDs []IFD8
+	R    BReader
 }
 
 func (bt *BigTIFF) ByteOrder() binary.ByteOrder {
-	return getByteOrder(bt.byteOrder)
+	return getByteOrder(bt.Order)
 }
 
-func ParseBigTIFF(r ReadAtReadSeeker) (out *BigTIFF, err error) {
-	bt := new(BigTIFF)
-	br := &bReader{
-		order: binary.BigEndian,
-		r:     r,
+func ParseBigTIFF(r ReadAtReadSeeker, tsg TagSpace, fts FieldTypeSet) (out *BigTIFF, err error) {
+	if tsg == nil {
+		tsg = DefaultTagSpace
+	}
+	if fts == nil {
+		fts = DefaultFieldTypes
+	}
+
+	var bth BigTIFFHeader
+
+	/*
+		bt := new(BigTIFF)
+		br := &bReader{
+			order: binary.BigEndian,
+			r:     r,
+		}
+	*/
+	// Get the byte order
+	if err = binary.Read(r, binary.BigEndian, &bth.Order); err != nil {
+		return
 	}
 	// Check the byte order
-	if err = br.Read(&bt.byteOrder); err != nil {
-		return
+	order := getByteOrder(bth.Order)
+	if order == nil {
+		return nil, fmt.Errorf("tiff: invalid byte order %q", []byte{byte(bth.Order >> 8), byte(bth.Order)})
 	}
-	br.order = bt.ByteOrder()
-	if br.order == nil {
-		return nil, fmt.Errorf("tiff: invalid byte order %q", []byte{byte(bt.byteOrder >> 8), byte(bt.byteOrder)})
+
+	br := NewBReader(r, order)
+
+	// Get the TIFF type
+	if err = br.BRead(&bth.Type); err != nil {
+		return
 	}
 	// Check the type (43 for BigTIFF)
-	if err = br.Read(&bt.Type); err != nil {
-		return
+	if bth.Type != TypeBigTIFF {
+		return nil, fmt.Errorf("tiff: invalid type %d", bth.Type)
 	}
-	if bt.Type != TypeBigTIFF {
-		return nil, fmt.Errorf("tiff: invalid type %d", bt.Type)
-	}
+
 	// Get the offset size
-	if err = br.Read(&bt.OffsetSize); err != nil {
+	if err = br.BRead(&bth.OffsetSize); err != nil {
 		return
 	}
-	// For now, only support an offset size of 8 for uint64.
-	if bt.OffsetSize != 8 {
-		return nil, fmt.Errorf("tiff: invalid offset size of %d", bt.OffsetSize)
+	// Check the offset size (For now, only support an offset size of 8 for uint64.)
+	if bth.OffsetSize != 8 {
+		return nil, fmt.Errorf("tiff: invalid offset size of %d", bth.OffsetSize)
 	}
+
 	// Get the constant
-	if err = br.Read(&bt.Constant); err != nil {
+	if err = br.BRead(&bth.Constant); err != nil {
 		return
 	}
-	if bt.Constant != 0 {
-		return nil, fmt.Errorf("tiff: invalid header constant, %d != 0", bt.Constant)
+	// Check the constant
+	if bth.Constant != 0 {
+		return nil, fmt.Errorf("tiff: invalid header constant, %d != 0", bth.Constant)
 	}
+
 	// Get the offset to the first IFD
-	if err = br.Read(&bt.FirstOffset); err != nil {
+	if err = br.BRead(&bth.FirstOffset); err != nil {
 		return
 	}
-	if bt.FirstOffset < 16 {
-		return nil, fmt.Errorf("tiff: invalid offset to first IFD, %d < 16", bt.FirstOffset)
+	// Check the offset to the first IFD (ensure it is past the end of the header)
+	if bth.FirstOffset < 16 {
+		return nil, fmt.Errorf("tiff: invalid offset to first IFD, %d < 16", bth.FirstOffset)
 	}
+
+	bt := &BigTIFF{
+		BigTIFFHeader: bth,
+		R:             br,
+	}
+
 	// Locate and process IFDs
 	for nextOffset := bt.FirstOffset; nextOffset != 0; {
-		var ifd *IFD8
-		if ifd, err = parseIFD8(br, nextOffset); err != nil {
+		var ifd IFD8
+		if ifd, err = ParseIFD8(br, nextOffset, tsg, fts); err != nil {
 			return
 		}
-		if err = ifd.processImageData(br); err != nil {
-			return
-		}
-
 		bt.IFDs = append(bt.IFDs, ifd)
-		nextOffset = ifd.NextOffset
+		nextOffset = ifd.NextOffset()
 	}
-
 	return bt, nil
 }

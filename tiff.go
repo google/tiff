@@ -5,56 +5,75 @@ import (
 	"fmt"
 )
 
-type TIFF struct {
-	byteOrder   uint16 // "MM" or "II"
+type TIFFHeader struct {
+	Order       uint16 // "MM" or "II"
 	Type        uint16 // Must be 42 (0x2A)
 	FirstOffset uint32 // Offset location for IFD 0
-	IFDs        []*IFD
+}
+
+type TIFF struct {
+	TIFFHeader
+	IFDs []IFD
+	R    BReader
 }
 
 func (t *TIFF) ByteOrder() binary.ByteOrder {
-	return getByteOrder(t.byteOrder)
+	return getByteOrder(t.Order)
 }
 
-func ParseTIFF(r ReadAtReadSeeker) (out *TIFF, err error) {
-	t := new(TIFF)
-	br := &bReader{
-		order: binary.BigEndian,
-		r:     r,
+func ParseTIFF(r ReadAtReadSeeker, tsp TagSpace, fts FieldTypeSet) (out *TIFF, err error) {
+	if tsp == nil {
+		tsp = DefaultTagSpace
+	}
+	if fts == nil {
+		fts = DefaultFieldTypes
+	}
+
+	var th TIFFHeader
+
+	// Get the byte order
+	if err = binary.Read(r, binary.BigEndian, &th.Order); err != nil {
+		return
 	}
 	// Check the byte order
-	if err = br.Read(&t.byteOrder); err != nil {
-		return
+	order := getByteOrder(th.Order)
+	if order == nil {
+		return nil, fmt.Errorf("tiff: invalid byte order %q", []byte{byte(th.Order >> 8), byte(th.Order)})
 	}
-	br.order = t.ByteOrder()
-	if br.order == nil {
-		return nil, fmt.Errorf("tiff: invalid byte order %q", []byte{byte(t.byteOrder >> 8), byte(t.byteOrder)})
+
+	br := NewBReader(r, order)
+
+	// Get the TIFF type
+	if err = br.BRead(&th.Type); err != nil {
+		return
 	}
 	// Check the type (42 for TIFF)
-	if err = br.Read(&t.Type); err != nil {
-		return
+	if th.Type != TypeTIFF {
+		return nil, fmt.Errorf("tiff: invalid type %d", th.Type)
 	}
-	if t.Type != TypeTIFF {
-		return nil, fmt.Errorf("tiff: invalid type %d", t.Type)
-	}
+
 	// Get the offset to the first IFD
-	if err = br.Read(&t.FirstOffset); err != nil {
+	if err = br.BRead(&th.FirstOffset); err != nil {
 		return
 	}
-	if t.FirstOffset < 8 {
-		return nil, fmt.Errorf("tiff: invalid offset to first IFD, %d < 8", t.FirstOffset)
+	// Check the offset to the first IFD (ensure it is past the end of the header)
+	if th.FirstOffset < 8 {
+		return nil, fmt.Errorf("tiff: invalid offset to first IFD, %d < 8", th.FirstOffset)
 	}
+
+	t := &TIFF{
+		TIFFHeader: th,
+		R:          br,
+	}
+
 	// Locate and process IFDs
 	for nextOffset := t.FirstOffset; nextOffset != 0; {
-		var ifd *IFD
-		if ifd, err = parseIFD(br, nextOffset); err != nil {
-			return
-		}
-		if err = ifd.processImageData(br); err != nil {
+		var ifd IFD
+		if ifd, err = ParseIFD(br, nextOffset, tsp, fts); err != nil {
 			return
 		}
 		t.IFDs = append(t.IFDs, ifd)
-		nextOffset = ifd.NextOffset
+		nextOffset = ifd.NextOffset()
 	}
 	return t, nil
 }

@@ -1,97 +1,100 @@
 package tiff
 
-type IFD struct {
-	NumEntries uint16
-	Fields     []Field
-	NextOffset uint32
+import "errors"
 
-	// The image data is not a part of the IFD.  It is always referenced by
-	// tags in the IFD.  However, each IFD describes at least one image.
-	// Here we provide a place to store that data regardless of how it was
-	// originally stored in the file.
-	ImageData []byte
-
-	// SubIFDs represents any IFDs that are considered SubIFDs of a top
-	// level IFD.  Not all implementations need or use this.  This is here
-	// for convenience since SubIFDs do not directly belong to the parent
-	// TIFF.  In normal processing, if you only look for the next offset,
-	// SubIFDs would be missed.
-	SubIFDs  []*IFD
-	PrivIFDs []*IFD
+// IFD represents the data structure of an IFD in a TIFF File.
+type IFD interface {
+	NumEntries() uint16
+	Fields() []Field
+	NextOffset() uint32
 }
 
-func (ifd *IFD) processSubIFDs(br *bReader) error {
-	return nil
+type imageFileDirectory struct {
+	numEntries uint16
+	fields     []Field
+	nextOffset uint32
 }
 
-func (ifd *IFD) processPrivIFDs(br *bReader) error {
-	return nil
+func (ifd *imageFileDirectory) NumEntries() uint16 {
+	return ifd.numEntries
 }
 
-func (ifd *IFD) processImageData(br *bReader) error {
-	return nil
+func (ifd *imageFileDirectory) Fields() []Field {
+	return ifd.fields
 }
 
-func parseIFD(br *bReader, offset uint32) (out *IFD, err error) {
-	ifd := new(IFD)
+func (ifd *imageFileDirectory) NextOffset() uint32 {
+	return ifd.nextOffset
+}
+
+func ParseIFD(br BReader, offset uint32, tsg TagSpace, fts FieldTypeSet) (out IFD, err error) {
+	if br == nil {
+		return nil, errors.New("No BReader supplied.")
+	}
+	if fts == nil {
+		fts = DefaultFieldTypes
+	}
+	if tsg == nil {
+		tsg = DefaultTagSpace
+	}
+	ifd := new(imageFileDirectory)
 	br.Seek(int64(offset), 0)
-	if err = br.Read(&ifd.NumEntries); err != nil {
+	if err = br.BRead(&ifd.numEntries); err != nil {
 		return
 	}
-	for i := uint16(0); i < ifd.NumEntries; i++ {
+	for i := uint16(0); i < ifd.numEntries; i++ {
 		var f Field
-		if f, err = parseField(br); err != nil {
+		if f, err = ParseField(br, tsg, fts); err != nil {
 			return
 		}
-		ifd.Fields = append(ifd.Fields, f)
+		ifd.fields = append(ifd.fields, f)
 	}
-	if err = br.Read(&ifd.NextOffset); err != nil {
+	if err = br.BRead(&ifd.nextOffset); err != nil {
 		return
 	}
-	// TODO: Look for the image data and process it.
-	// TODO: Look for SubIFDs and process them.
 	return ifd, nil
 }
 
-type IFD8 struct {
-	NumEntries uint64
-	Fields     []Field8
-	NextOffset uint64
-
-	// The image data is not a part of the IFD.  It is always referenced by
-	// tags in the IFD.  However, each IFD describes at least one image.
-	// Here we provide a place to store that data regardless of how it was
-	// originally stored in the file.
-	ImageData []byte
-
-	// SubIFDs represents any IFDs that are considered SubIFDs of a top
-	// level IFD.  Not all implementations need or use this.  This is here
-	// for convenience since SubIFDs do not belong to the parent TIFF.
-	SubIFDs  []*IFD8
-	PrivIFDs []*IFD8
+// IFD8 represents the data structure of an IFD in a BigTIFF file.
+type IFD8 interface {
+	NumEntries() uint64
+	Fields() []Field8
+	NextOffset() uint64
 }
 
-func (ifd8 *IFD8) processImageData(br *bReader) error {
-	return nil
+type imageFileDirectory8 struct {
+	numEntries uint64
+	fields     []Field8
+	nextOffset uint64
 }
 
-func parseIFD8(br *bReader, offset uint64) (out *IFD8, err error) {
-	ifd := new(IFD8)
-	br.Seek(int64(offset), 0) // TODO: This is wrong.  Use big.Int?
-	if err = br.Read(&ifd.NumEntries); err != nil {
+func (ifd8 *imageFileDirectory8) NumEntries() uint64 {
+	return ifd8.numEntries
+}
+
+func (ifd8 *imageFileDirectory8) Fields() []Field8 {
+	return ifd8.fields
+}
+
+func (ifd8 *imageFileDirectory8) NextOffset() uint64 {
+	return ifd8.nextOffset
+}
+
+func ParseIFD8(br BReader, offset uint64, tsg TagSpace, fts FieldTypeSet) (out IFD8, err error) {
+	ifd := new(imageFileDirectory8)
+	br.Seek(int64(offset), 0) // TODO: This is wrong.  Need uint64.  Use big.Int?
+	if err = br.BRead(&ifd.numEntries); err != nil {
 		return
 	}
-	for i := uint64(0); i < ifd.NumEntries; i++ {
+	for i := uint64(0); i < ifd.numEntries; i++ {
 		var f Field8
-		if f, err = parseField8(br); err != nil {
+		if f, err = ParseField8(br, tsg, fts); err != nil {
 			return
 		}
-		ifd.Fields = append(ifd.Fields, f)
+		ifd.fields = append(ifd.fields, f)
 	}
-	if err = br.Read(&ifd.NextOffset); err != nil {
+	if err = br.BRead(&ifd.nextOffset); err != nil {
 		return
 	}
-	// TODO: Look for the image data and process it.
-	// TODO: Look for SubIFDs and process them.
 	return ifd, nil
 }
