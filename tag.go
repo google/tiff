@@ -5,7 +5,7 @@ import (
 )
 
 type Tag interface {
-	Id() uint16
+	ID() uint16
 	Name() string
 	ValidFieldTypes() []FieldType
 }
@@ -20,7 +20,7 @@ type tag struct {
 	validFTs []FieldType
 }
 
-func (t *tag) Id() uint16 {
+func (t *tag) ID() uint16 {
 	return t.id
 }
 

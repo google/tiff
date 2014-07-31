@@ -77,11 +77,11 @@ func (ts *tagSet) Register(t Tag) bool {
 		return false
 	}
 	// Disallow registration if the id is not within the lower & upper bounds.
-	if t.Id() < ts.lower || t.Id() > ts.upper {
+	if t.ID() < ts.lower || t.ID() > ts.upper {
 		return false
 	}
 	// Just overwrite tags if they already exist.
-	ts.tags[t.Id()] = t
+	ts.tags[t.ID()] = t
 	return true
 }
 

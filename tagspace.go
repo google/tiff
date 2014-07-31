@@ -81,14 +81,14 @@ func (tsp *tagSpace) ListTagSets() []string {
 func (tsp *tagSpace) RegisterTagSet(ts TagSet) {
 	tsp.mu.Lock()
 	tsp.ts[ts.Name()] = ts
-	for _, tId := range ts.ListTags() {
-		t, _ := ts.GetTag(tId)
+	for _, tID := range ts.ListTags() {
+		t, _ := ts.GetTag(tID)
 		// See if a tag already exists
-		if nstp := tsp.tags[tId]; nstp != nil {
+		if nstp := tsp.tags[tID]; nstp != nil {
 			// If the name is not the same, log a warning.
 			if nstp.tag.Name() != t.Name() {
 				log.Printf("tiff: registration warning: space %q: tag %d: %q in set %q conflicts with existing %q in set %q\n",
-					tsp.name, tId, t.Name(), ts.Name(), nstp.tag.Name(), nstp.tagSetName)
+					tsp.name, tID, t.Name(), ts.Name(), nstp.tag.Name(), nstp.tagSetName)
 			}
 			// If the name is the same, we do not care.
 		}
@@ -97,7 +97,7 @@ func (tsp *tagSpace) RegisterTagSet(ts TagSet) {
 		// package to understand when they write over existing tags.  A
 		// user can always get the TagSet and then access the
 		// conflicting tag that way.
-		tsp.tags[tId] = &nsTagPair{ts.Name(), t}
+		tsp.tags[tID] = &nsTagPair{ts.Name(), t}
 	}
 	tsp.mu.Unlock()
 }
