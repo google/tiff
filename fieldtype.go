@@ -136,12 +136,15 @@ var (
 	FTFloat     = NewFieldType(11, "FLOAT", 4, true, reprFloat)
 	FTDouble    = NewFieldType(12, "DOUBLE", 8, true, reprDouble)
 
-	// Not well defined
-	FTIFD     = NewFieldType(13, "IFD", 4, false, nil)     // TODO: Double check parameters.
-	FTUnicode = NewFieldType(14, "UNICODE", 4, false, nil) // TODO: Double check parameters.
-	FTComplex = NewFieldType(15, "COMPLEX", 8, true, nil)  // TODO: Double check parameters.
+	// TODO: The following 3 field types are not well defined.  Double check
+	// their parameters.  The came from BigTIFF documentation.
 
-	//BigTIFF
+	FTIFD     = NewFieldType(13, "IFD", 4, false, nil)
+	FTUnicode = NewFieldType(14, "UNICODE", 4, false, nil)
+	FTComplex = NewFieldType(15, "COMPLEX", 8, true, nil)
+
+	// The following are for BigTIFF use.
+
 	FTLong8  = NewFieldType(16, "LONG8", 8, false, nil)
 	FTSLong8 = NewFieldType(17, "SLONG8", 8, true, nil)
 	FTIFD8   = NewFieldType(18, "IFD8", 8, false, nil)
