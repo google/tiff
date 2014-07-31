@@ -8,10 +8,9 @@ import (
 // TIFF along with each byte ordering.  This is mostly useful for registration
 // with the "image" package from the Go standard library.
 const (
-	TIFFBigEndian    = "MM\x00\x2A"
-	TIFFLitEndian    = "II\x2A\x00"
-	BigTIFFBigEndian = "MM\x00\x2B"
-	BigTIFFLitEndian = "II\x2B\x00"
+	TIFFBigEndian        = "MM\x00\x2A"
+	TIFFLitEndian        = "II\x2A\x00"
+	Version       uint16 = 0x2A
 )
 
 // These constants represent the byte order options present at the beginning of
@@ -21,7 +20,7 @@ const (
 	LitEndian uint16 = 0x4949 // "II" or 18761
 )
 
-func getByteOrder(bo uint16) binary.ByteOrder {
+func GetByteOrder(bo uint16) binary.ByteOrder {
 	switch bo {
 	case BigEndian:
 		return binary.BigEndian
@@ -30,10 +29,3 @@ func getByteOrder(bo uint16) binary.ByteOrder {
 	}
 	return nil
 }
-
-// These constants represent the TIFF file type identifiers.  At present,
-// there are values for a TIFF and a BigTIFF.
-const (
-	VersionTIFF    uint16 = 0x2A
-	VersionBigTIFF uint16 = 0x2B
-)

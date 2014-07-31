@@ -1,8 +1,10 @@
-package tiff
+package bigtiff
 
 import (
 	"encoding/binary"
 	"fmt"
+
+	"github.com/jonathanpittman/tiff"
 )
 
 type BigTIFFHeader struct {
@@ -16,48 +18,41 @@ type BigTIFFHeader struct {
 type BigTIFF struct {
 	BigTIFFHeader
 	IFDs []IFD8
-	R    BReader
+	R    tiff.BReader
 }
 
 func (bt *BigTIFF) ByteOrder() binary.ByteOrder {
-	return getByteOrder(bt.Order)
+	return tiff.GetByteOrder(bt.Order)
 }
 
-func ParseBigTIFF(r ReadAtReadSeeker, tsg TagSpace, fts FieldTypeSet) (out *BigTIFF, err error) {
+func ParseBigTIFF(r tiff.ReadAtReadSeeker, tsg tiff.TagSpace, fts tiff.FieldTypeSet) (out *BigTIFF, err error) {
 	if tsg == nil {
-		tsg = DefaultTagSpace
+		tsg = tiff.DefaultTagSpace
 	}
 	if fts == nil {
-		fts = DefaultFieldTypes
+		fts = tiff.DefaultFieldTypes
 	}
 
 	var bth BigTIFFHeader
 
-	/*
-		bt := new(BigTIFF)
-		br := &bReader{
-			order: binary.BigEndian,
-			r:     r,
-		}
-	*/
 	// Get the byte order
 	if err = binary.Read(r, binary.BigEndian, &bth.Order); err != nil {
 		return
 	}
 	// Check the byte order
-	order := getByteOrder(bth.Order)
+	order := tiff.GetByteOrder(bth.Order)
 	if order == nil {
 		return nil, fmt.Errorf("tiff: invalid byte order %q", []byte{byte(bth.Order >> 8), byte(bth.Order)})
 	}
 
-	br := NewBReader(r, order)
+	br := tiff.NewBReader(r, order)
 
 	// Get the TIFF type
 	if err = br.BRead(&bth.Version); err != nil {
 		return
 	}
 	// Check the type (43 for BigTIFF)
-	if bth.Version != VersionBigTIFF {
+	if bth.Version != Version {
 		return nil, fmt.Errorf("tiff: unsupported version %d", bth.Version)
 	}
 

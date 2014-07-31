@@ -18,7 +18,7 @@ type TIFF struct {
 }
 
 func (t *TIFF) ByteOrder() binary.ByteOrder {
-	return getByteOrder(t.Order)
+	return GetByteOrder(t.Order)
 }
 
 func ParseTIFF(r ReadAtReadSeeker, tsp TagSpace, fts FieldTypeSet) (out *TIFF, err error) {
@@ -36,7 +36,7 @@ func ParseTIFF(r ReadAtReadSeeker, tsp TagSpace, fts FieldTypeSet) (out *TIFF, e
 		return
 	}
 	// Check the byte order
-	order := getByteOrder(th.Order)
+	order := GetByteOrder(th.Order)
 	if order == nil {
 		return nil, fmt.Errorf("tiff: invalid byte order %q", []byte{byte(th.Order >> 8), byte(th.Order)})
 	}
@@ -48,7 +48,7 @@ func ParseTIFF(r ReadAtReadSeeker, tsp TagSpace, fts FieldTypeSet) (out *TIFF, e
 		return
 	}
 	// Check the type (42 for TIFF)
-	if th.Version != VersionTIFF {
+	if th.Version != Version {
 		return nil, fmt.Errorf("tiff: unsupported version %d", th.Version)
 	}
 

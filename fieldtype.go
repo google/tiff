@@ -137,7 +137,7 @@ var (
 	FTDouble    = NewFieldType(12, "DOUBLE", 8, true, reprDouble)
 
 	// TODO: The following 3 field types are not well defined.  Double check
-	// their parameters.  The came from BigTIFF documentation.
+	// their parameters.
 
 	FTIFD     = NewFieldType(13, "IFD", 4, false, nil)
 	FTUnicode = NewFieldType(14, "UNICODE", 4, false, nil)
