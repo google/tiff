@@ -61,22 +61,22 @@ type field struct {
 	fts FieldTypeSet
 
 	// tsg is the TagSpace that can be used to look up the Tag that
-	// corresponds to the result of entry.TagId().
+	// corresponds to the result of entry.TagID().
 	tsg TagSpace
 }
 
 func (f *field) Tag() Tag {
 	if f.tsg == nil {
-		return DefaultTagSpace.GetTag(f.entry.TagId())
+		return DefaultTagSpace.GetTag(f.entry.TagID())
 	}
-	return f.tsg.GetTag(f.entry.TagId())
+	return f.tsg.GetTag(f.entry.TagID())
 }
 
 func (f *field) Type() FieldType {
 	if f.fts == nil {
-		return DefaultFieldTypes.GetType(f.entry.TypeId())
+		return DefaultFieldTypes.GetType(f.entry.TypeID())
 	}
-	return f.fts.GetType(f.entry.TypeId())
+	return f.fts.GetType(f.entry.TypeID())
 }
 
 func (f *field) Count() uint32 {
@@ -212,22 +212,22 @@ type field8 struct {
 	fts FieldTypeSet
 
 	// tsg is the TagSpace that can be used to look up the Tag that
-	// corresponds to the result of entry.TagId().
+	// corresponds to the result of entry.TagID().
 	tsg TagSpace
 }
 
 func (f8 *field8) Tag() Tag {
 	if f8.tsg == nil {
-		return DefaultTagSpace.GetTag(f8.entry.TagId())
+		return DefaultTagSpace.GetTag(f8.entry.TagID())
 	}
-	return f8.tsg.GetTag(f8.entry.TagId())
+	return f8.tsg.GetTag(f8.entry.TagID())
 }
 
 func (f8 *field8) Type() FieldType {
 	if f8.fts == nil {
-		return DefaultFieldTypes.GetType(f8.entry.TypeId())
+		return DefaultFieldTypes.GetType(f8.entry.TypeID())
 	}
-	return f8.fts.GetType(f8.entry.TypeId())
+	return f8.fts.GetType(f8.entry.TypeID())
 }
 
 func (f8 *field8) Count() uint64 {

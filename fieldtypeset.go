@@ -25,7 +25,7 @@ type fieldTypeSet struct {
 func (fts *fieldTypeSet) Register(ft FieldType) error {
 	fts.mu.Lock()
 	defer fts.mu.Unlock()
-	id := ft.Id()
+	id := ft.ID()
 	current, ok := fts.types[id]
 	if ok {
 		// If there is a need to overwrite a field type to use a different name or
