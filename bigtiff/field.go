@@ -33,8 +33,8 @@ func (fv *fieldValue) MarshalJSON() ([]byte, error) {
 	return json.Marshal(tmp)
 }
 
-// Field8 represents a field in an IFD8 for a BigTIFF file.
-type Field8 interface {
+// Field represents a field in an IFD for a BigTIFF file.
+type Field interface {
 	Tag() tiff.Tag
 	Type() tiff.FieldType
 	Count() uint64
@@ -42,8 +42,8 @@ type Field8 interface {
 	Value() tiff.FieldValue
 }
 
-type field8 struct {
-	entry Entry8
+type field struct {
+	entry Entry
 
 	// If the offset entry is actually a value, then the bytes will be
 	// stored here and offset should be set to 0.  Otherwise, the offset
@@ -61,49 +61,49 @@ type field8 struct {
 	tsg tiff.TagSpace
 }
 
-func (f8 *field8) Tag() tiff.Tag {
-	if f8.tsg == nil {
-		return tiff.DefaultTagSpace.GetTag(f8.entry.TagID())
+func (f *field) Tag() tiff.Tag {
+	if f.tsg == nil {
+		return tiff.DefaultTagSpace.GetTag(f.entry.TagID())
 	}
-	return f8.tsg.GetTag(f8.entry.TagID())
+	return f.tsg.GetTag(f.entry.TagID())
 }
 
-func (f8 *field8) Type() tiff.FieldType {
-	if f8.fts == nil {
-		return tiff.DefaultFieldTypes.GetType(f8.entry.TypeID())
+func (f *field) Type() tiff.FieldType {
+	if f.fts == nil {
+		return tiff.DefaultFieldTypes.GetType(f.entry.TypeID())
 	}
-	return f8.fts.GetType(f8.entry.TypeID())
+	return f.fts.GetType(f.entry.TypeID())
 }
 
-func (f8 *field8) Count() uint64 {
-	return f8.entry.Count()
+func (f *field) Count() uint64 {
+	return f.entry.Count()
 }
 
-func (f8 *field8) Offset() uint64 {
-	if uint64(f8.Type().Size())*f8.Count() <= 8 {
+func (f *field) Offset() uint64 {
+	if uint64(f.Type().Size())*f.Count() <= 8 {
 		return 0
 	}
-	offsetBytes := f8.entry.ValueOffset()
-	return f8.Value().Order().Uint64(offsetBytes[:])
+	offsetBytes := f.entry.ValueOffset()
+	return f.Value().Order().Uint64(offsetBytes[:])
 }
 
-func (f8 *field8) Value() tiff.FieldValue {
-	return f8.value
+func (f *field) Value() tiff.FieldValue {
+	return f.value
 }
 
-func (f8 *field8) MarshalJSON() ([]byte, error) {
+func (f *field) MarshalJSON() ([]byte, error) {
 	return nil, nil
 }
 
-func ParseField8(br tiff.BReader, tsg tiff.TagSpace, fts tiff.FieldTypeSet) (out Field8, err error) {
+func ParseField(br tiff.BReader, tsg tiff.TagSpace, fts tiff.FieldTypeSet) (out Field, err error) {
 	if fts == nil {
 		fts = tiff.DefaultFieldTypes
 	}
 	if tsg == nil {
 		tsg = tiff.DefaultTagSpace
 	}
-	f := &field8{fts: fts, tsg: tsg}
-	if f.entry, err = ParseEntry8(br); err != nil {
+	f := &field{fts: fts, tsg: tsg}
+	if f.entry, err = ParseEntry(br); err != nil {
 		return
 	}
 	// TODO: Implement grabbing the value.  For now, just use the bytes from
