@@ -29,7 +29,7 @@ func (ifd *imageFileDirectory) NextOffset() uint32 {
 
 func ParseIFD(br BReader, offset uint32, tsg TagSpace, fts FieldTypeSet) (out IFD, err error) {
 	if br == nil {
-		return nil, errors.New("No BReader supplied.")
+		return nil, errors.New("tiff: no BReader supplied")
 	}
 	if fts == nil {
 		fts = DefaultFieldTypes
