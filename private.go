@@ -10,6 +10,17 @@ package tiff
 var PrivateTags = NewTagSet("Private", 32768, 65535)
 
 func init() {
+	/*
+		TODO:
+		Most of these tags should actually be removed from this package
+		and left as an exercise for users to register in their own
+		packages. For example, if someone creates a GeoTIFF package, the
+		Geo* tags would be defined in that package.  Those tags would be
+		registered by importing that package.  We leave these tags here
+		for reference and general use until such time as other proper
+		packages represent them.
+	*/
+
 	// Do not lock PrivateTags.  This is meant to be added to by others.
 
 	// http://www.awaresystems.be/imaging/tiff/tifftags/private.html
