@@ -38,7 +38,7 @@ From [BIGTIFFDESIGN]:
 // actual stored value inside a TIFF.  They are here to help an implementer or
 // user understand their format.
 type FieldType interface {
-	Id() uint16
+	ID() uint16
 	Name() string
 	Size() uint32
 	Signed() bool
@@ -57,7 +57,7 @@ type fieldType struct {
 	repr   func([]byte, binary.ByteOrder) string
 }
 
-func (ft *fieldType) Id() uint16 {
+func (ft *fieldType) ID() uint16 {
 	return ft.id
 }
 
@@ -79,12 +79,12 @@ func (ft *fieldType) Repr() func([]byte, binary.ByteOrder) string {
 
 func (ft *fieldType) MarshalJSON() ([]byte, error) {
 	tmp := struct {
-		Id     uint16
+		ID     uint16
 		Name   string
 		Size   uint32
 		Signed bool
 	}{
-		Id:     ft.id,
+		ID:     ft.id,
 		Name:   ft.name,
 		Size:   ft.size,
 		Signed: ft.signed,
@@ -94,7 +94,7 @@ func (ft *fieldType) MarshalJSON() ([]byte, error) {
 
 func reprByte(in []byte, bo binary.ByteOrder) string   { return fmt.Sprintf("%d", in[0]) }
 func reprSByte(in []byte, bo binary.ByteOrder) string  { return fmt.Sprintf("%d", int8(in[0])) }
-func reprAscii(in []byte, bo binary.ByteOrder) string  { return string(in) }
+func reprASCII(in []byte, bo binary.ByteOrder) string  { return string(in) }
 func reprShort(in []byte, bo binary.ByteOrder) string  { return fmt.Sprintf("%d", bo.Uint16(in)) }
 func reprSShort(in []byte, bo binary.ByteOrder) string { return fmt.Sprintf("%d", int16(bo.Uint16(in))) }
 func reprLong(in []byte, bo binary.ByteOrder) string   { return fmt.Sprintf("%d", bo.Uint32(in)) }
@@ -124,7 +124,7 @@ Default set of Field types
 */
 var (
 	FTByte      = NewFieldType(1, "BYTE", 1, false, reprByte)
-	FTAscii     = NewFieldType(2, "ASCII", 1, false, reprAscii)
+	FTAscii     = NewFieldType(2, "ASCII", 1, false, reprASCII)
 	FTShort     = NewFieldType(3, "SHORT", 2, false, reprShort)
 	FTLong      = NewFieldType(4, "LONG", 4, false, reprLong)
 	FTRational  = NewFieldType(5, "RATIONAL", 8, false, reprRational)
