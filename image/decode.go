@@ -11,8 +11,6 @@ import (
 func init() {
 	image.RegisterFormat("TIFF", tiff.TIFFBigEndian, DecodeTIFF, DecodeConfig)
 	image.RegisterFormat("TIFF", tiff.TIFFLitEndian, DecodeTIFF, DecodeConfig)
-	image.RegisterFormat("BigTIFF", tiff.BigTIFFBigEndian, DecodeBigTIFF, DecodeConfig)
-	image.RegisterFormat("BigTIFF", tiff.BigTIFFLitEndian, DecodeBigTIFF, DecodeConfig)
 }
 
 func DecodeTIFF(r io.Reader) (image.Image, error) {
