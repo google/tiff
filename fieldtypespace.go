@@ -115,9 +115,8 @@ func (ftsp *fieldTypeSpace) MarshalJSON() ([]byte, error) {
 //
 var DefaultFieldTypeSpace = NewFieldTypeSpace("Default")
 
-// RegisterFieldTypeSet registers a FieldTypeSet in the DefaultFieldTypeSpace.  Only fieldTypes that
-// would not cause collisions should be registered this way (i.e. GPS and
-// MakerNote fieldTypes would cause collisions with the default tiff fieldType space.)
+// RegisterFieldTypeSet registers a FieldTypeSet in the DefaultFieldTypeSpace.
+// Only FieldTypes that would not cause collisions should be registered this way.
 func RegisterFieldTypeSet(fts FieldTypeSet) {
 	DefaultFieldTypeSpace.RegisterFieldTypeSet(fts)
 }
