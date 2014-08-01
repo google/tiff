@@ -8,9 +8,9 @@ import (
 )
 
 const (
-	Version       uint16 = 0x55
-	TIFFBigEndian        = "MM\x00\x55"
-	TIFFLitEndian        = "II\x55\x00"
+	Version         uint16 = 0x55
+	TIFF85BigEndian        = "MM\x00\x55"
+	TIFF85LitEndian        = "II\x55\x00"
 )
 
 func ParseTIFF85(r tiff.ReadAtReadSeeker, tsp tiff.TagSpace, ftsp tiff.FieldTypeSpace) (out *tiff.TIFF, err error) {
