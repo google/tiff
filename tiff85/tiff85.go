@@ -13,15 +13,15 @@ const (
 	TIFFLitEndian        = "II\x55\x00"
 )
 
-func ParseTIFF85(r tiff.ReadAtReadSeeker, tsp tiff.TagSpace, fts tiff.FieldTypeSet) (out *tiff.TIFF, err error) {
+func ParseTIFF85(r tiff.ReadAtReadSeeker, tsp tiff.TagSpace, ftsp tiff.FieldTypeSpace) (out *tiff.TIFF, err error) {
 	if tsp == nil {
 		tsp = tiff.DefaultTagSpace
 	}
-	if fts == nil {
-		fts = tiff.DefaultFieldTypes
+	if ftsp == nil {
+		ftsp = tiff.DefaultFieldTypeSpace
 	}
 
-	var th tiff.TIFFHeader
+	var th tiff.Header
 
 	// Get the byte order
 	if err = binary.Read(r, binary.BigEndian, &th.Order); err != nil {
@@ -54,14 +54,14 @@ func ParseTIFF85(r tiff.ReadAtReadSeeker, tsp tiff.TagSpace, fts tiff.FieldTypeS
 	}
 
 	t := &tiff.TIFF{
-		TIFFHeader: th,
-		R:          br,
+		Header: th,
+		R:      br,
 	}
 
 	// Locate and process IFDs
 	for nextOffset := t.FirstOffset; nextOffset != 0; {
 		var ifd tiff.IFD
-		if ifd, err = tiff.ParseIFD(br, nextOffset, tsp, fts); err != nil {
+		if ifd, err = tiff.ParseIFD(br, nextOffset, tsp, ftsp); err != nil {
 			return
 		}
 		t.IFDs = append(t.IFDs, ifd)

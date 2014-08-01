@@ -27,7 +27,7 @@ func (ifd *imageFileDirectory) NextOffset() uint64 {
 	return ifd.nextOffset
 }
 
-func ParseIFD(br tiff.BReader, offset uint64, tsg tiff.TagSpace, fts tiff.FieldTypeSet) (out IFD, err error) {
+func ParseIFD(br tiff.BReader, offset uint64, tsg tiff.TagSpace, ftsp tiff.FieldTypeSpace) (out IFD, err error) {
 	ifd := new(imageFileDirectory)
 	br.Seek(int64(offset), 0) // TODO: This may be wrong.  Need uint64 capacity?
 	if err = br.BRead(&ifd.numEntries); err != nil {
@@ -35,7 +35,7 @@ func ParseIFD(br tiff.BReader, offset uint64, tsg tiff.TagSpace, fts tiff.FieldT
 	}
 	for i := uint64(0); i < ifd.numEntries; i++ {
 		var f Field
-		if f, err = ParseField(br, tsg, fts); err != nil {
+		if f, err = ParseField(br, tsg, ftsp); err != nil {
 			return
 		}
 		ifd.fields = append(ifd.fields, f)

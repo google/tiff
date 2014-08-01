@@ -14,8 +14,14 @@ var (
 	FTIFD8   = tiff.NewFieldType(18, "IFD8", 8, false, nil)
 )
 
+var BTFieldTypeSet = tiff.NewFieldTypeSet("BigTIFF")
+
 func init() {
-	tiff.RegisterFieldType(FTLong8)
-	tiff.RegisterFieldType(FTSLong8)
-	tiff.RegisterFieldType(FTIFD8)
+	BTFieldTypeSet.Register(FTLong8)
+	BTFieldTypeSet.Register(FTSLong8)
+	BTFieldTypeSet.Register(FTIFD8)
+
+	BTFieldTypeSet.Lock()
+
+	tiff.DefaultFieldTypeSpace.RegisterFieldTypeSet(BTFieldTypeSet)
 }

@@ -25,12 +25,12 @@ func (bt *BigTIFF) ByteOrder() binary.ByteOrder {
 	return tiff.GetByteOrder(bt.Order)
 }
 
-func ParseBigTIFF(r tiff.ReadAtReadSeeker, tsg tiff.TagSpace, fts tiff.FieldTypeSet) (out *BigTIFF, err error) {
-	if tsg == nil {
-		tsg = tiff.DefaultTagSpace
+func ParseBigTIFF(r tiff.ReadAtReadSeeker, tsp tiff.TagSpace, ftsp tiff.FieldTypeSpace) (out *BigTIFF, err error) {
+	if tsp == nil {
+		tsp = tiff.DefaultTagSpace
 	}
-	if fts == nil {
-		fts = tiff.DefaultFieldTypes
+	if ftsp == nil {
+		ftsp = tiff.DefaultFieldTypeSpace
 	}
 
 	var hdr Header
@@ -91,7 +91,7 @@ func ParseBigTIFF(r tiff.ReadAtReadSeeker, tsg tiff.TagSpace, fts tiff.FieldType
 	// Locate and process IFDs
 	for nextOffset := bt.FirstOffset; nextOffset != 0; {
 		var ifd IFD
-		if ifd, err = ParseIFD(br, nextOffset, tsg, fts); err != nil {
+		if ifd, err = ParseIFD(br, nextOffset, tsp, ftsp); err != nil {
 			return
 		}
 		bt.IFDs = append(bt.IFDs, ifd)

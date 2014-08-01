@@ -76,12 +76,14 @@ func (ts *tagSet) Register(t Tag) bool {
 	if ts.locked {
 		return false
 	}
+	id := t.ID()
 	// Disallow registration if the id is not within the lower & upper bounds.
-	if t.ID() < ts.lower || t.ID() > ts.upper {
+	if id < ts.lower || id > ts.upper {
 		return false
 	}
-	// Just overwrite tags if they already exist.
-	ts.tags[t.ID()] = t
+	// Just overwrite tags if they already exist.  Users doing this
+	// should be generally aware of what they are doing.
+	ts.tags[id] = t
 	return true
 }
 

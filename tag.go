@@ -28,7 +28,7 @@ func (t *tag) Name() string {
 	if len(t.name) > 0 {
 		return t.name
 	}
-	return fmt.Sprintf("UNNAMED_%d", t.id)
+	return fmt.Sprintf("UNNAMED_TAG_%d", t.id)
 }
 
 func (t *tag) ValidFieldTypes() []FieldType {

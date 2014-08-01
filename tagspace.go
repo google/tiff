@@ -51,11 +51,12 @@ func (tsp *tagSpace) GetTag(id uint16) Tag {
 	// Slower lookup from map
 	for _, ts := range tsp.ts {
 		if t, ok := ts.GetTag(id); ok {
-			tsp.tags[id] = &nsTagPair{ts.Name(), t} // Cache it for faster future lookups
+			// Cache it for faster future lookups
+			tsp.tags[id] = &nsTagPair{ts.Name(), t}
 			return t
 		}
 	}
-	return NewTag(id, fmt.Sprintf("UNKNOWN_%d", id), nil)
+	return NewTag(id, fmt.Sprintf("UNKNOWN_TAG_%d", id), nil)
 }
 
 func (tsp *tagSpace) GetTagSet(name string) (TagSet, bool) {

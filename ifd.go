@@ -27,15 +27,15 @@ func (ifd *imageFileDirectory) NextOffset() uint32 {
 	return ifd.nextOffset
 }
 
-func ParseIFD(br BReader, offset uint32, tsg TagSpace, fts FieldTypeSet) (out IFD, err error) {
+func ParseIFD(br BReader, offset uint32, tsp TagSpace, ftsp FieldTypeSpace) (out IFD, err error) {
 	if br == nil {
 		return nil, errors.New("tiff: no BReader supplied")
 	}
-	if fts == nil {
-		fts = DefaultFieldTypes
+	if ftsp == nil {
+		ftsp = DefaultFieldTypeSpace
 	}
-	if tsg == nil {
-		tsg = DefaultTagSpace
+	if tsp == nil {
+		tsp = DefaultTagSpace
 	}
 	ifd := new(imageFileDirectory)
 	br.Seek(int64(offset), 0)
@@ -44,7 +44,7 @@ func ParseIFD(br BReader, offset uint32, tsg TagSpace, fts FieldTypeSet) (out IF
 	}
 	for i := uint16(0); i < ifd.numEntries; i++ {
 		var f Field
-		if f, err = ParseField(br, tsg, fts); err != nil {
+		if f, err = ParseField(br, tsp, ftsp); err != nil {
 			return
 		}
 		ifd.fields = append(ifd.fields, f)

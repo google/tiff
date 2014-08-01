@@ -55,28 +55,28 @@ type field struct {
 	// Then value will be used to hold the bytes associated with those values.
 	value FieldValue
 
-	// fts is the FieldTypeSet that can be used to look up the FieldType
-	// that corresponds to the typeId of this entry.  If fts is nil, the
-	// default set DefaultFieldTypes is used instead.
-	fts FieldTypeSet
+	// ftsp is the FieldTypeSpace that can be used to look up the FieldType
+	// that corresponds to the typeId of this entry.  If ftsp is nil, the
+	// default set DefaultFieldTypeSpace is used instead.
+	ftsp FieldTypeSpace
 
-	// tsg is the TagSpace that can be used to look up the Tag that
+	// tsp is the TagSpace that can be used to look up the Tag that
 	// corresponds to the result of entry.TagID().
-	tsg TagSpace
+	tsp TagSpace
 }
 
 func (f *field) Tag() Tag {
-	if f.tsg == nil {
+	if f.tsp == nil {
 		return DefaultTagSpace.GetTag(f.entry.TagID())
 	}
-	return f.tsg.GetTag(f.entry.TagID())
+	return f.tsp.GetTag(f.entry.TagID())
 }
 
 func (f *field) Type() FieldType {
-	if f.fts == nil {
-		return DefaultFieldTypes.GetType(f.entry.TypeID())
+	if f.ftsp == nil {
+		return DefaultFieldTypeSpace.GetFieldType(f.entry.TypeID())
 	}
-	return f.fts.GetType(f.entry.TypeID())
+	return f.ftsp.GetFieldType(f.entry.TypeID())
 }
 
 func (f *field) Count() uint32 {
@@ -97,14 +97,14 @@ func (f *field) Value() FieldValue {
 
 func (f *field) String() string {
 	var (
-		theTSet  = f.tsg
-		theFTSet = f.fts
+		theTSP  = f.tsp
+		theFTSP = f.ftsp
 	)
-	if theTSet == nil {
-		theTSet = DefaultTagSpace
+	if theTSP == nil {
+		theTSP = DefaultTagSpace
 	}
-	if theFTSet == nil {
-		theFTSet = DefaultFieldTypes
+	if theFTSP == nil {
+		theFTSP = DefaultFieldTypeSpace
 	}
 	var valueRep string
 	switch f.Type() {
@@ -142,33 +142,33 @@ func (f *field) String() string {
 			valueRep = fmt.Sprintf("%v", vals)
 		}
 	}
-	return fmt.Sprintf("<Tag: %v, Type: %v, Count: %d, Offset: %d, Value: %s, FieldTypeSet: %q, TagSpace: %q>",
-		f.Tag().Name(), f.Type().Name(), f.Count(), f.Offset(), valueRep, theFTSet.Name(), theTSet.Name())
+	return fmt.Sprintf("<Tag: %v, Type: %v, Count: %d, Offset: %d, Value: %s, FieldTypeSpace: %q, TagSpace: %q>",
+		f.Tag().Name(), f.Type().Name(), f.Count(), f.Offset(), valueRep, theFTSP.Name(), theTSP.Name())
 }
 
 func (f *field) MarshalJSON() ([]byte, error) {
 	tmp := struct {
-		E   Entry        `json:"Entry"`
-		V   FieldValue   `json:"FieldValue"`
-		FTS FieldTypeSet `json:"FieldTypeSet"`
-		TSG TagSpace     `json:"TagSpace"`
+		E    Entry          `json:"Entry"`
+		V    FieldValue     `json:"FieldValue"`
+		FTSP FieldTypeSpace `json:"FieldTypeSpace"`
+		TSP  TagSpace       `json:"TagSpace"`
 	}{
-		E:   f.entry,
-		V:   f.value,
-		FTS: f.fts,
-		TSG: f.tsg,
+		E:    f.entry,
+		V:    f.value,
+		FTSP: f.ftsp,
+		TSP:  f.tsp,
 	}
 	return json.Marshal(tmp)
 }
 
-func ParseField(br BReader, tsg TagSpace, fts FieldTypeSet) (out Field, err error) {
-	if fts == nil {
-		fts = DefaultFieldTypes
+func ParseField(br BReader, tsp TagSpace, ftsp FieldTypeSpace) (out Field, err error) {
+	if ftsp == nil {
+		ftsp = DefaultFieldTypeSpace
 	}
-	if tsg == nil {
-		tsg = DefaultTagSpace
+	if tsp == nil {
+		tsp = DefaultTagSpace
 	}
-	f := &field{fts: fts, tsg: tsg}
+	f := &field{ftsp: ftsp, tsp: tsp}
 	if f.entry, err = ParseEntry(br); err != nil {
 		return
 	}

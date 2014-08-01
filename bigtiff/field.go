@@ -51,28 +51,28 @@ type field struct {
 	// Then value will hold the bytes associated with those values.
 	value tiff.FieldValue
 
-	// fts is the FieldTypeSet that can be used to look up the FieldType
-	// that corresponds to the typeId of this entry.  If fts is nil, the
-	// default set DefaultFieldTypes is used instead.
-	fts tiff.FieldTypeSet
+	// ftsp is the FieldTypeSpace that can be used to look up the FieldType
+	// that corresponds to the typeId of this entry.  If ftsp is nil, the
+	// default set tiff.DefaultFieldTypeSpace is used instead.
+	ftsp tiff.FieldTypeSpace
 
-	// tsg is the TagSpace that can be used to look up the Tag that
+	// tsp is the TagSpace that can be used to look up the Tag that
 	// corresponds to the result of entry.TagID().
-	tsg tiff.TagSpace
+	tsp tiff.TagSpace
 }
 
 func (f *field) Tag() tiff.Tag {
-	if f.tsg == nil {
+	if f.tsp == nil {
 		return tiff.DefaultTagSpace.GetTag(f.entry.TagID())
 	}
-	return f.tsg.GetTag(f.entry.TagID())
+	return f.tsp.GetTag(f.entry.TagID())
 }
 
 func (f *field) Type() tiff.FieldType {
-	if f.fts == nil {
-		return tiff.DefaultFieldTypes.GetType(f.entry.TypeID())
+	if f.ftsp == nil {
+		return tiff.DefaultFieldTypeSpace.GetFieldType(f.entry.TypeID())
 	}
-	return f.fts.GetType(f.entry.TypeID())
+	return f.ftsp.GetFieldType(f.entry.TypeID())
 }
 
 func (f *field) Count() uint64 {
@@ -95,14 +95,14 @@ func (f *field) MarshalJSON() ([]byte, error) {
 	return nil, nil
 }
 
-func ParseField(br tiff.BReader, tsg tiff.TagSpace, fts tiff.FieldTypeSet) (out Field, err error) {
-	if fts == nil {
-		fts = tiff.DefaultFieldTypes
+func ParseField(br tiff.BReader, tsp tiff.TagSpace, ftsp tiff.FieldTypeSpace) (out Field, err error) {
+	if ftsp == nil {
+		ftsp = tiff.DefaultFieldTypeSpace
 	}
-	if tsg == nil {
-		tsg = tiff.DefaultTagSpace
+	if tsp == nil {
+		tsp = tiff.DefaultTagSpace
 	}
-	f := &field{fts: fts, tsg: tsg}
+	f := &field{ftsp: ftsp, tsp: tsp}
 	if f.entry, err = ParseEntry(br); err != nil {
 		return
 	}
