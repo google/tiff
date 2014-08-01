@@ -13,3 +13,9 @@ var (
 	FTSLong8 = tiff.NewFieldType(17, "SLONG8", 8, true, nil)
 	FTIFD8   = tiff.NewFieldType(18, "IFD8", 8, false, nil)
 )
+
+func init() {
+	tiff.RegisterFieldType(FTLong8)
+	tiff.RegisterFieldType(FTSLong8)
+	tiff.RegisterFieldType(FTIFD8)
+}
