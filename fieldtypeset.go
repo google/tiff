@@ -99,9 +99,6 @@ var defFieldTypes = &fieldTypeSet{
 		13: FTIFD,
 		14: FTUnicode,
 		15: FTComplex,
-		16: FTLong8,
-		17: FTSLong8,
-		18: FTIFD8,
 	},
 }
 

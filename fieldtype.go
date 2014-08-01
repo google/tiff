@@ -26,9 +26,6 @@ From [BIGTIFFDESIGN]:
 	13 = IFD	?? 32-bit unsigned integer offset value ??
 	14 = UNICODE	??
 	15 = COMPLEX	??
-	16 = LONG8	64-bit unsigned integer.
-	17 = SLONG8	64-bit signed integer.
-	18 = IFD8	64-bit unsigned integer offset value
 */
 
 // A FieldType represents all of the necessary pieces of information one needs to
@@ -120,7 +117,6 @@ Default set of Field types
          for BigTIFF. These are meant to be used with regular TIFF, but were
          apparently not properly documented prior to the BigTIFF design
          discussion.
-  16-18: Field Type IDs 16 - 18 were added for use with BigTIFF in [BIGTIFFDESIGN].
 */
 var (
 	FTByte      = NewFieldType(1, "BYTE", 1, false, reprByte)
@@ -142,10 +138,4 @@ var (
 	FTIFD     = NewFieldType(13, "IFD", 4, false, nil)
 	FTUnicode = NewFieldType(14, "UNICODE", 4, false, nil)
 	FTComplex = NewFieldType(15, "COMPLEX", 8, true, nil)
-
-	// The following are for BigTIFF use.
-
-	FTLong8  = NewFieldType(16, "LONG8", 8, false, nil)
-	FTSLong8 = NewFieldType(17, "SLONG8", 8, true, nil)
-	FTIFD8   = NewFieldType(18, "IFD8", 8, false, nil)
 )
