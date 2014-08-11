@@ -14,6 +14,7 @@ type TagSpace interface {
 	Name() string
 	GetTag(id uint16) Tag
 	GetTagSet(name string) (TagSet, bool)
+	GetTagSetNameFromTag(id uint16) string
 	ListTagSets() []string
 	RegisterTagSet(ts TagSet)
 }
@@ -64,6 +65,24 @@ func (tsp *tagSpace) GetTagSet(name string) (TagSet, bool) {
 	ts, ok := tsp.ts[name]
 	tsp.mu.RUnlock()
 	return ts, ok
+}
+
+func (tsp *tagSpace) GetTagSetNameFromTag(id uint16) string {
+	tsp.mu.RLock()
+	defer tsp.mu.RUnlock()
+	// Fast lookup from cache
+	if nstp := tsp.tags[id]; nstp != nil {
+		return nstp.tagSetName
+	}
+	// Slower lookup from map
+	for _, ts := range tsp.ts {
+		if t, ok := ts.GetTag(id); ok {
+			// Cache it for faster future lookups
+			tsp.tags[id] = &nsTagPair{ts.Name(), t}
+			return ts.Name()
+		}
+	}
+	return ""
 }
 
 func (tsp *tagSpace) ListTagSets() []string {

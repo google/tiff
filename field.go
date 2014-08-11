@@ -142,8 +142,10 @@ func (f *field) String() string {
 			valueRep = fmt.Sprintf("%v", vals)
 		}
 	}
-	return fmt.Sprintf("<Tag: %v, Type: %v, Count: %d, Offset: %d, Value: %s, FieldTypeSpace: %q, TagSpace: %q>",
-		f.Tag().Name(), f.Type().Name(), f.Count(), f.Offset(), valueRep, theFTSP.Name(), theTSP.Name())
+	tagID := f.Tag().ID()
+	return fmt.Sprintf(`<Tag: (%#04x) %v, Type: %v, Count: %d, Offset: %d, Value: %s, FieldTypeSpace: %q, TagSpaceSet: "%s.%s">`,
+		tagID, f.Tag().Name(), f.Type().Name(), f.Count(), f.Offset(), valueRep,
+		theFTSP.Name(), theTSP.Name(), theTSP.GetTagSetNameFromTag(tagID))
 }
 
 func (f *field) MarshalJSON() ([]byte, error) {
