@@ -1,3 +1,4 @@
+// Package tiff85 provides parsing for a tiff file with a version number of 85.
 package tiff85
 
 import (
@@ -8,11 +9,14 @@ import (
 )
 
 const (
-	Version         uint16 = 0x55
+	Version         uint16 = 0x55 // 85
 	TIFF85BigEndian        = "MM\x00\x55"
 	TIFF85LitEndian        = "II\x55\x00"
 )
 
+// ParseTIFF85 is practically the same as the regular tiff package's ParseTIFF
+// function except for the version checking.  This functionality is kept
+// separate to keep the core tiff package slim and free from non-standard bits.
 func ParseTIFF85(r tiff.ReadAtReadSeeker, tsp tiff.TagSpace, ftsp tiff.FieldTypeSpace) (out *tiff.TIFF, err error) {
 	if tsp == nil {
 		tsp = tiff.DefaultTagSpace
