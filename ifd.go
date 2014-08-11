@@ -1,6 +1,9 @@
 package tiff
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 // IFD represents the data structure of an IFD in a TIFF File.
 type IFD interface {
@@ -40,6 +43,7 @@ func ParseIFD(br BReader, offset uint32, tsp TagSpace, ftsp FieldTypeSpace) (out
 	ifd := new(imageFileDirectory)
 	br.Seek(int64(offset), 0)
 	if err = br.BRead(&ifd.numEntries); err != nil {
+		err = fmt.Errorf("tiff: unable to read the number of entries for the IFD at offset %#08x: %v", offset, err)
 		return
 	}
 	for i := uint16(0); i < ifd.numEntries; i++ {
@@ -50,6 +54,7 @@ func ParseIFD(br BReader, offset uint32, tsp TagSpace, ftsp FieldTypeSpace) (out
 		ifd.fields = append(ifd.fields, f)
 	}
 	if err = br.BRead(&ifd.nextOffset); err != nil {
+		err = fmt.Errorf("tiff: unable to read the offset for the next ifd: %v", err)
 		return
 	}
 	return ifd, nil

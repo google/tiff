@@ -33,6 +33,7 @@ func ParseTIFF(r ReadAtReadSeeker, tsp TagSpace, ftsp FieldTypeSpace) (out *TIFF
 
 	// Get the byte order
 	if err = binary.Read(r, binary.BigEndian, &hdr.Order); err != nil {
+		err = fmt.Errorf("tiff: unable to read byte order: %v", err)
 		return
 	}
 	// Check the byte order
@@ -45,6 +46,7 @@ func ParseTIFF(r ReadAtReadSeeker, tsp TagSpace, ftsp FieldTypeSpace) (out *TIFF
 
 	// Get the TIFF type
 	if err = br.BRead(&hdr.Version); err != nil {
+		err = fmt.Errorf("tiff: unable to read tiff version: %v", err)
 		return
 	}
 	// Check the type (42 for TIFF)
@@ -54,6 +56,7 @@ func ParseTIFF(r ReadAtReadSeeker, tsp TagSpace, ftsp FieldTypeSpace) (out *TIFF
 
 	// Get the offset to the first IFD
 	if err = br.BRead(&hdr.FirstOffset); err != nil {
+		err = fmt.Errorf("tiff: unable to read offset to first ifd: %v", err)
 		return
 	}
 	// Check the offset to the first IFD (ensure it is past the end of the header)
