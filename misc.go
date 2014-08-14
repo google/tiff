@@ -67,8 +67,12 @@ func (b *buffer) ReadAt(p []byte, off int64) (int, error) {
 
 func (b *buffer) Read(p []byte) (int, error) {
 	end := b.pos + len(p)
-	err := b.fill(end)
-	return copy(p, b.buf[b.pos:end]), err
+	if err := b.fill(end); err != nil {
+		return 0, err
+	}
+	n := copy(p, b.buf[b.pos:end])
+	b.pos = end
+	return n, nil
 }
 
 func (b *buffer) Seek(offset int64, whence int) (int64, error) {
@@ -104,7 +108,9 @@ func (b *buffer) Section(off, n int) *io.SectionReader {
 	return io.NewSectionReader(b, int64(off), int64(n))
 }
 
-// NewReadAtReadSeeker converts an io.Reader into a ReadAtReadSeeker.
+// NewReadAtReadSeeker converts r (an io.Reader) into a ReadAtReadSeeker.  If
+// the underlying type of r can satisfy a ReadAtReadSeeker, it is asserted as
+// such and used directly instead of being wrapped.
 func NewReadAtReadSeeker(r io.Reader) ReadAtReadSeeker {
 	if rars, ok := r.(ReadAtReadSeeker); ok {
 		return rars
