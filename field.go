@@ -143,8 +143,8 @@ func (f *field) String() string {
 		}
 	}
 	tagID := f.Tag().ID()
-	return fmt.Sprintf(`<Tag: (%#04x) %v, Type: %v, Count: %d, Offset: %d, Value: %s, FieldTypeSpace: %q, TagSpaceSet: "%s.%s">`,
-		tagID, f.Tag().Name(), f.Type().Name(), f.Count(), f.Offset(), valueRep,
+	return fmt.Sprintf(`<Tag: (%#04x/%05d) %v, Type: %v, Count: %d, Offset: %d, Value: %s, FieldTypeSpace: %q, TagSpaceSet: "%s.%s">`,
+		tagID, tagID, f.Tag().Name(), f.Type().Name(), f.Count(), f.Offset(), valueRep,
 		theFTSP.Name(), theTSP.Name(), theTSP.GetTagSetNameFromTag(tagID))
 }
 
