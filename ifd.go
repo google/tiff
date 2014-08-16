@@ -10,12 +10,15 @@ type IFD interface {
 	NumEntries() uint16
 	Fields() []Field
 	NextOffset() uint32
+	HasField(id uint16) bool
+	GetField(id uint16) Field
 }
 
 type imageFileDirectory struct {
 	numEntries uint16
 	fields     []Field
 	nextOffset uint32
+	fieldMap   map[uint16]Field
 }
 
 func (ifd *imageFileDirectory) NumEntries() uint16 {
@@ -30,6 +33,15 @@ func (ifd *imageFileDirectory) NextOffset() uint32 {
 	return ifd.nextOffset
 }
 
+func (ifd *imageFileDirectory) HasField(id uint16) bool {
+	_, ok := ifd.fieldMap[id]
+	return ok
+}
+
+func (ifd *imageFileDirectory) GetField(id uint16) Field {
+	return ifd.fieldMap[id]
+}
+
 func ParseIFD(br BReader, offset uint32, tsp TagSpace, ftsp FieldTypeSpace) (out IFD, err error) {
 	if br == nil {
 		return nil, errors.New("tiff: no BReader supplied")
@@ -40,7 +52,9 @@ func ParseIFD(br BReader, offset uint32, tsp TagSpace, ftsp FieldTypeSpace) (out
 	if tsp == nil {
 		tsp = DefaultTagSpace
 	}
-	ifd := new(imageFileDirectory)
+	ifd := &imageFileDirectory{
+		fieldMap: make(map[uint16]Field, 1),
+	}
 	br.Seek(int64(offset), 0)
 	if err = br.BRead(&ifd.numEntries); err != nil {
 		err = fmt.Errorf("tiff: unable to read the number of entries for the IFD at offset %#08x: %v", offset, err)
@@ -52,6 +66,7 @@ func ParseIFD(br BReader, offset uint32, tsp TagSpace, ftsp FieldTypeSpace) (out
 			return
 		}
 		ifd.fields = append(ifd.fields, f)
+		ifd.fieldMap[f.Tag().ID()] = f
 	}
 	if err = br.BRead(&ifd.nextOffset); err != nil {
 		err = fmt.Errorf("tiff: unable to read the offset for the next ifd: %v", err)
