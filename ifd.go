@@ -55,8 +55,8 @@ Fields (%d):
 	var buf bytes.Buffer
 
 	w.Init(&buf, 5, 0, 1, ' ', 0)
-	for _, f := range ifd.Fields() {
-		fmt.Fprintf(w, "  %v\n", f)
+	for i, f := range ifd.Fields() {
+		fmt.Fprintf(w, "  %2d: %v\n", i, f)
 	}
 	w.Flush()
 
