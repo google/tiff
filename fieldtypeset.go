@@ -2,6 +2,7 @@ package tiff
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
 	"sync"
 )
@@ -95,4 +96,8 @@ func (fts *fieldTypeSet) MarshalJSON() ([]byte, error) {
 		Name: fts.name,
 	}
 	return json.Marshal(tmp)
+}
+
+func (fts *fieldTypeSet) String() string {
+	return fmt.Sprintf("<FieldTypeSet: %q>", fts.name)
 }

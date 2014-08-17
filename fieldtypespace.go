@@ -112,6 +112,10 @@ func (ftsp *fieldTypeSpace) MarshalJSON() ([]byte, error) {
 	return json.Marshal(tmp)
 }
 
+func (ftsp *fieldTypeSpace) String() string {
+	return fmt.Sprintf("<FieldTypeSpace: %q>", ftsp.name)
+}
+
 //
 var DefaultFieldTypeSpace = NewFieldTypeSpace("Default")
 

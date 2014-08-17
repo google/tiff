@@ -131,6 +131,10 @@ func (tsp *tagSpace) MarshalJSON() ([]byte, error) {
 	return json.Marshal(tmp)
 }
 
+func (tsp *tagSpace) String() string {
+	return fmt.Sprintf("<TagSpace: %q>", tsp.name)
+}
+
 //
 var DefaultTagSpace = NewTagSpace("Default")
 

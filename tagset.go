@@ -1,6 +1,7 @@
 package tiff
 
 import (
+	"fmt"
 	"sort"
 	"sync"
 )
@@ -91,4 +92,8 @@ func (ts *tagSet) Lock() {
 	ts.mu.Lock()
 	ts.locked = true
 	ts.mu.Unlock()
+}
+
+func (ts *tagSet) String() string {
+	return fmt.Sprintf("<TagSet: %q>", ts.name)
 }
