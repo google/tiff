@@ -5,10 +5,29 @@ import (
 	"fmt"
 )
 
+type ErrUnsuppTIFFVersion struct {
+	Version uint16
+}
+
+func (eutv ErrUnsuppTIFFVersion) Error() string {
+	return fmt.Sprintf("tiff: unsupported version %d", eutv.Version)
+}
+
 type Header struct {
 	Order       uint16 // "MM" or "II"
 	Version     uint16 // Must be 42 (0x2A)
 	FirstOffset uint32 // Offset location for IFD 0
+}
+
+func (h Header) String() string {
+	fmtStr := `
+Order: %q (%s)
+Version: %d
+FirstOffset: %d
+`
+	orderStr := string([]byte{byte(h.Order >> 8), byte(h.Order)})
+	orderName := GetByteOrder(h.Order).String()
+	return fmt.Sprintf(fmtStr, orderStr, orderName, h.Version, h.FirstOffset)
 }
 
 type TIFF struct {
@@ -51,7 +70,7 @@ func ParseTIFF(r ReadAtReadSeeker, tsp TagSpace, ftsp FieldTypeSpace) (out *TIFF
 	}
 	// Check the type (42 for TIFF)
 	if hdr.Version != Version {
-		return nil, fmt.Errorf("tiff: unsupported version %d", hdr.Version)
+		return nil, ErrUnsuppTIFFVersion{hdr.Version}
 	}
 
 	// Get the offset to the first IFD

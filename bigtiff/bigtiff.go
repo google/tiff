@@ -7,6 +7,14 @@ import (
 	"github.com/jonathanpittman/tiff"
 )
 
+type ErrUnsuppTIFFVersion struct {
+	Version uint16
+}
+
+func (eutv ErrUnsuppTIFFVersion) Error() string {
+	return fmt.Sprintf("bigtiff: unsupported version %d", eutv.Version)
+}
+
 type Header struct {
 	Order       uint16 // "MM" or "II"
 	Version     uint16 // Must be 43 (0x2B)
@@ -53,7 +61,7 @@ func ParseBigTIFF(r tiff.ReadAtReadSeeker, tsp tiff.TagSpace, ftsp tiff.FieldTyp
 	}
 	// Check the type (43 for BigTIFF)
 	if hdr.Version != Version {
-		return nil, fmt.Errorf("tiff: unsupported version %d", hdr.Version)
+		return nil, ErrUnsuppTIFFVersion{hdr.Version}
 	}
 
 	// Get the offset size

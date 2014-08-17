@@ -14,6 +14,14 @@ const (
 	TIFF85LitEndian        = "II\x55\x00"
 )
 
+type ErrUnsuppTIFFVersion struct {
+	Version uint16
+}
+
+func (eutv ErrUnsuppTIFFVersion) Error() string {
+	return fmt.Sprintf("tiff85: unsupported version %d", eutv.Version)
+}
+
 // ParseTIFF85 is practically the same as the regular tiff package's ParseTIFF
 // function except for the version checking.  This functionality is kept
 // separate to keep the core tiff package slim and free from non-standard bits.
@@ -45,7 +53,7 @@ func ParseTIFF85(r tiff.ReadAtReadSeeker, tsp tiff.TagSpace, ftsp tiff.FieldType
 	}
 	// Check the type (85 for this version of TIFF)
 	if th.Version != Version {
-		return nil, fmt.Errorf("tiff: unsupported version %d", th.Version)
+		return nil, ErrUnsuppTIFFVersion{th.Version}
 	}
 
 	// Get the offset to the first IFD
