@@ -8,9 +8,25 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"sync"
 )
 
-var TiffFieldPrintFullFieldValue bool
+var (
+	tiffFieldPrintFullFieldValue bool
+	printMu                      sync.RWMutex
+)
+
+func SetTiffFieldPrintFullFieldValue(b bool) {
+	printMu.Lock()
+	defer printMu.Unlock()
+	tiffFieldPrintFullFieldValue = b
+}
+
+func GetTiffFieldPrintFullFieldValue() bool {
+	printMu.RLock()
+	defer printMu.RUnlock()
+	return tiffFieldPrintFullFieldValue
+}
 
 type FieldValue interface {
 	Order() binary.ByteOrder
@@ -111,7 +127,7 @@ func (f *field) String() string {
 	var valueRep string
 	switch f.Type() {
 	case FTAscii:
-		if TiffFieldPrintFullFieldValue {
+		if GetTiffFieldPrintFullFieldValue() {
 			valueRep = fmt.Sprintf("%q", f.value.Bytes()[:f.Count()])
 		} else {
 			if f.Count() > 40 {
@@ -131,7 +147,7 @@ func (f *field) String() string {
 		buf := f.Value().Bytes()
 		size := f.Type().Size()
 		count := f.Count()
-		if !TiffFieldPrintFullFieldValue {
+		if !GetTiffFieldPrintFullFieldValue() {
 			if count > maxItems {
 				count = maxItems
 				buf = buf[:count*size]
@@ -149,7 +165,7 @@ func (f *field) String() string {
 		if count == 1 {
 			valueRep = vals[0]
 		} else {
-			if TiffFieldPrintFullFieldValue {
+			if GetTiffFieldPrintFullFieldValue() {
 				valueRep = fmt.Sprintf("%v", vals[:f.Count()])
 			} else {
 				// Keep a limit of 40 base characters when printing
