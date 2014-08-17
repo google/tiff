@@ -10,6 +10,8 @@ import (
 	"fmt"
 )
 
+var TiffFieldPrintFullFieldValue bool
+
 type FieldValue interface {
 	Order() binary.ByteOrder
 	Bytes() []byte
@@ -109,7 +111,15 @@ func (f *field) String() string {
 	var valueRep string
 	switch f.Type() {
 	case FTAscii:
-		valueRep = fmt.Sprintf("%q", f.Value().Bytes())
+		if TiffFieldPrintFullFieldValue {
+			valueRep = fmt.Sprintf("%q", f.value.Bytes()[:f.Count()])
+		} else {
+			if f.Count() > 40 {
+				valueRep = fmt.Sprintf("%q...", f.value.Bytes()[:41])
+			} else {
+				valueRep = fmt.Sprintf("%q", f.value.Bytes()[:f.Count()])
+			}
+		}
 	default:
 		// For general display purposes, don't show more than maxItems
 		// amount of elements.  In this case, 10 is reasonable.  Beyond
@@ -121,9 +131,11 @@ func (f *field) String() string {
 		buf := f.Value().Bytes()
 		size := f.Type().Size()
 		count := f.Count()
-		if count > maxItems {
-			count = maxItems
-			buf = buf[:count*size]
+		if !TiffFieldPrintFullFieldValue {
+			if count > maxItems {
+				count = maxItems
+				buf = buf[:count*size]
+			}
 		}
 		vals := make([]string, 0, count)
 		for len(buf) > 0 {
@@ -136,14 +148,33 @@ func (f *field) String() string {
 		}
 		if count == 1 {
 			valueRep = vals[0]
-		} else if f.Count() > maxItems {
-			valueRep = fmt.Sprintf("%v...", vals)
 		} else {
-			valueRep = fmt.Sprintf("%v", vals)
+			if TiffFieldPrintFullFieldValue {
+				valueRep = fmt.Sprintf("%v", vals[:f.Count()])
+			} else {
+				// Keep a limit of 40 base characters when printing
+				var totalLen, stop int
+				for i := range vals {
+					totalLen += len(vals[i])
+					if totalLen > 40 {
+						stop = i
+						break
+					}
+					totalLen += 1 // account for space between values
+				}
+				if stop > 0 {
+					vals = vals[:stop]
+				}
+				if stop > 0 || f.Count() > maxItems {
+					valueRep = fmt.Sprintf("%v...", vals)
+				} else {
+					valueRep = fmt.Sprintf("%v", vals[:f.Count()])
+				}
+			}
 		}
 	}
 	tagID := f.Tag().ID()
-	return fmt.Sprintf(`<Tag: (%#04x/%05d) %v, Type: %v, Count: %d, Offset: %d, Value: %s, FieldTypeSpace: %q, TagSpaceSet: "%s.%s">`,
+	return fmt.Sprintf(`<Tag: (%#04x/%05d) %v	Type: %v	Count: %d	Offset: %d	Value: %s	FieldTypeSpace: %q	TagSpaceSet: "%s.%s">`,
 		tagID, tagID, f.Tag().Name(), f.Type().Name(), f.Count(), f.Offset(), valueRep,
 		theFTSP.Name(), theTSP.Name(), theTSP.GetTagSetNameFromTag(tagID))
 }

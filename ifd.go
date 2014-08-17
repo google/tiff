@@ -1,8 +1,10 @@
 package tiff
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"text/tabwriter"
 )
 
 // IFD represents the data structure of an IFD in a TIFF File.
@@ -40,6 +42,25 @@ func (ifd *imageFileDirectory) HasField(id uint16) bool {
 
 func (ifd *imageFileDirectory) GetField(id uint16) Field {
 	return ifd.fieldMap[id]
+}
+
+func (ifd *imageFileDirectory) String() string {
+	fmtStr := `
+NumEntries: %d
+NextOffset: %d
+Fields (%d):
+%s
+`
+	w := new(tabwriter.Writer)
+	var buf bytes.Buffer
+
+	w.Init(&buf, 5, 0, 1, ' ', 0)
+	for _, f := range ifd.Fields() {
+		fmt.Fprintf(w, "  %v\n", f)
+	}
+	w.Flush()
+
+	return fmt.Sprintf(fmtStr, ifd.numEntries, ifd.nextOffset, len(ifd.fields), buf.String())
 }
 
 func ParseIFD(br BReader, offset uint32, tsp TagSpace, ftsp FieldTypeSpace) (out IFD, err error) {
