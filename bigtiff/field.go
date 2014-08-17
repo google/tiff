@@ -3,6 +3,8 @@ package bigtiff
 import (
 	"encoding/binary"
 	"encoding/json"
+	"fmt"
+	"sync"
 
 	"github.com/jonathanpittman/tiff"
 )
@@ -10,6 +12,23 @@ import (
 // A Field is primarily comprised of an Entry.  If the Entry's value is actually
 // an offset to the data that the entry describes, then the Field will contain
 // both the offset and the data that the offset points to in the file.
+
+var (
+	tiffFieldPrintFullFieldValue bool
+	printMu                      sync.RWMutex
+)
+
+func SetTiffFieldPrintFullFieldValue(b bool) {
+	printMu.Lock()
+	defer printMu.Unlock()
+	tiffFieldPrintFullFieldValue = b
+}
+
+func GetTiffFieldPrintFullFieldValue() bool {
+	printMu.RLock()
+	defer printMu.RUnlock()
+	return tiffFieldPrintFullFieldValue
+}
 
 type fieldValue struct {
 	order binary.ByteOrder
@@ -89,6 +108,88 @@ func (f *field) Offset() uint64 {
 
 func (f *field) Value() tiff.FieldValue {
 	return f.value
+}
+
+func (f *field) String() string {
+	var (
+		theTSP  = f.tsp
+		theFTSP = f.ftsp
+	)
+	if theTSP == nil {
+		theTSP = tiff.DefaultTagSpace
+	}
+	if theFTSP == nil {
+		theFTSP = tiff.DefaultFieldTypeSpace
+	}
+	var valueRep string
+	switch f.Type() {
+	case tiff.FTAscii:
+		if GetTiffFieldPrintFullFieldValue() {
+			valueRep = fmt.Sprintf("%q", f.value.Bytes()[:f.Count()])
+		} else {
+			if f.Count() > 40 {
+				valueRep = fmt.Sprintf("%q...", f.value.Bytes()[:41])
+			} else {
+				valueRep = fmt.Sprintf("%q", f.value.Bytes()[:f.Count()])
+			}
+		}
+	default:
+		// For general display purposes, don't show more than maxItems
+		// amount of elements.  In this case, 10 is reasonable.  Beyond
+		// 10 starts to line wrap in some cases like rationals.  If
+		// we encounter that the value contains more than 10, we append
+		// the ... to the end during string formatting to indicate that
+		// there were more values, but they are not displayed here.
+		const maxItems = 10
+		buf := f.Value().Bytes()
+		size := uint64(f.Type().Size())
+		count := f.Count()
+		if !GetTiffFieldPrintFullFieldValue() {
+			if count > maxItems {
+				count = maxItems
+				buf = buf[:count*size]
+			}
+		}
+		vals := make([]string, 0, count)
+		for len(buf) > 0 {
+			if f.Type().Repr() != nil {
+				vals = append(vals, f.Type().Repr()(buf[:size], f.Value().Order()))
+			} else {
+				vals = append(vals, fmt.Sprintf("%v", buf[:size]))
+			}
+			buf = buf[size:]
+		}
+		if count == 1 {
+			valueRep = vals[0]
+		} else {
+			if GetTiffFieldPrintFullFieldValue() {
+				valueRep = fmt.Sprintf("%v", vals[:f.Count()])
+			} else {
+				// Keep a limit of 40 base characters when printing
+				var totalLen, stop int
+				for i := range vals {
+					totalLen += len(vals[i])
+					if totalLen > 40 {
+						stop = i
+						break
+					}
+					totalLen += 1 // account for space between values
+				}
+				if stop > 0 {
+					vals = vals[:stop]
+				}
+				if stop > 0 || f.Count() > maxItems {
+					valueRep = fmt.Sprintf("%v...", vals)
+				} else {
+					valueRep = fmt.Sprintf("%v", vals[:f.Count()])
+				}
+			}
+		}
+	}
+	tagID := f.Tag().ID()
+	return fmt.Sprintf(`<Tag: (%#04x/%05d) %v	Type: %v	Count: %d	Offset: %d	Value: %s	FieldTypeSpace: %q	TagSpaceSet: "%s.%s">`,
+		tagID, tagID, f.Tag().Name(), f.Type().Name(), f.Count(), f.Offset(), valueRep,
+		theFTSP.Name(), theTSP.Name(), theTSP.GetTagSetNameFromTag(tagID))
 }
 
 func (f *field) MarshalJSON() ([]byte, error) {
