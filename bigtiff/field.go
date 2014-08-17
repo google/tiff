@@ -106,12 +106,18 @@ func ParseField(br tiff.BReader, tsp tiff.TagSpace, ftsp tiff.FieldTypeSpace) (o
 	if f.entry, err = ParseEntry(br); err != nil {
 		return
 	}
-	// TODO: Implement grabbing the value.  For now, just use the bytes from
-	// the ValueOffset.
-	valOff := f.entry.ValueOffset()
-	f.value = &fieldValue{
-		order: br.Order(),
-		value: valOff[:],
+	fv := &fieldValue{order: br.Order()}
+	valSize := int64(f.Count()) * int64(f.Type().Size())
+	valOffBytes := f.entry.ValueOffset()
+	if valSize > 8 {
+		fv.value = make([]byte, valSize)
+		offset := int64(br.Order().Uint64(valOffBytes[:])) // Hope this does not go negative
+		if err = br.BReadSection(&fv.value, offset, valSize); err != nil {
+			return
+		}
+	} else {
+		fv.value = valOffBytes[:]
 	}
+	f.value = fv
 	return f, nil
 }
