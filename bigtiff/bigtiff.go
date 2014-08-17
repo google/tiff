@@ -23,6 +23,19 @@ type Header struct {
 	FirstOffset uint64 // Offset location for IFD 0
 }
 
+func (h Header) String() string {
+	fmtStr := `
+Order: %q (%s)
+Version: %d
+OffsetSize: %d
+Constant: %d
+FirstOffset: %d
+`
+	orderStr := string([]byte{byte(h.Order >> 8), byte(h.Order)})
+	orderName := tiff.GetByteOrder(h.Order).String()
+	return fmt.Sprintf(fmtStr, orderStr, orderName, h.Version, h.OffsetSize, h.Constant, h.FirstOffset)
+}
+
 type BigTIFF struct {
 	Header
 	IFDs []IFD

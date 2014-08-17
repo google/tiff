@@ -1,6 +1,12 @@
 package bigtiff
 
-import "github.com/jonathanpittman/tiff"
+import (
+	"bytes"
+	"fmt"
+	"text/tabwriter"
+
+	"github.com/jonathanpittman/tiff"
+)
 
 // IFD represents the data structure of an IFD in a BigTIFF.
 type IFD interface {
@@ -25,6 +31,25 @@ func (ifd *imageFileDirectory) Fields() []Field {
 
 func (ifd *imageFileDirectory) NextOffset() uint64 {
 	return ifd.nextOffset
+}
+
+func (ifd *imageFileDirectory) String() string {
+	fmtStr := `
+NumEntries: %d
+NextOffset: %d
+Fields (%d):
+%s
+`
+	w := new(tabwriter.Writer)
+	var buf bytes.Buffer
+
+	w.Init(&buf, 5, 0, 1, ' ', 0)
+	for i, f := range ifd.Fields() {
+		fmt.Fprintf(w, "  %2d: %v\n", i, f)
+	}
+	w.Flush()
+
+	return fmt.Sprintf(fmtStr, ifd.numEntries, ifd.nextOffset, len(ifd.fields), buf.String())
 }
 
 func ParseIFD(br tiff.BReader, offset uint64, tsg tiff.TagSpace, ftsp tiff.FieldTypeSpace) (out IFD, err error) {
