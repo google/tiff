@@ -50,7 +50,7 @@ var (
 	FTSRational = NewFieldType(10, "SRATIONAL", 8, true, reprSRational)
 	FTFloat     = NewFieldType(11, "FLOAT", 4, true, reprFloat)
 	FTDouble    = NewFieldType(12, "DOUBLE", 8, true, reprDouble)
-	FTIFD       = NewFieldType(13, "IFD", 4, false, nil)
+	FTIFD       = NewFieldType(13, "IFD", 4, false, reprLong)
 	FTUnicode   = NewFieldType(14, "UNICODE", 4, false, nil)
 	FTComplex   = NewFieldType(15, "COMPLEX", 8, true, nil)
 )
