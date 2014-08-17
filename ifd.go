@@ -12,8 +12,8 @@ type IFD interface {
 	NumEntries() uint16
 	Fields() []Field
 	NextOffset() uint32
-	HasField(id uint16) bool
-	GetField(id uint16) Field
+	HasField(tagID uint16) bool
+	GetField(tagID uint16) Field
 }
 
 type imageFileDirectory struct {
@@ -35,13 +35,13 @@ func (ifd *imageFileDirectory) NextOffset() uint32 {
 	return ifd.nextOffset
 }
 
-func (ifd *imageFileDirectory) HasField(id uint16) bool {
-	_, ok := ifd.fieldMap[id]
+func (ifd *imageFileDirectory) HasField(tagID uint16) bool {
+	_, ok := ifd.fieldMap[tagID]
 	return ok
 }
 
-func (ifd *imageFileDirectory) GetField(id uint16) Field {
-	return ifd.fieldMap[id]
+func (ifd *imageFileDirectory) GetField(tagID uint16) Field {
+	return ifd.fieldMap[tagID]
 }
 
 func (ifd *imageFileDirectory) String() string {
