@@ -5,6 +5,14 @@ import (
 	"fmt"
 )
 
+type ErrInvalidByteOrder struct {
+	Order [2]byte
+}
+
+func (eibo ErrInvalidByteOrder) Error() string {
+	return fmt.Sprintf("tiff: invalid byte order %q", eibo.Order)
+}
+
 type ErrUnsuppTIFFVersion struct {
 	Version uint16
 }
@@ -58,7 +66,7 @@ func ParseTIFF(r ReadAtReadSeeker, tsp TagSpace, ftsp FieldTypeSpace) (out *TIFF
 	// Check the byte order
 	order := GetByteOrder(hdr.Order)
 	if order == nil {
-		return nil, fmt.Errorf("tiff: invalid byte order %q", []byte{byte(hdr.Order >> 8), byte(hdr.Order)})
+		return nil, ErrInvalidByteOrder{[2]byte{byte(hdr.Order >> 8), byte(hdr.Order)}}
 	}
 
 	br := NewBReader(r, order)
