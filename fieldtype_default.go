@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"fmt"
 	"math"
-	"math/big"
 )
 
 /* Field type definitions
@@ -64,10 +63,14 @@ func reprSShort(in []byte, bo binary.ByteOrder) string { return fmt.Sprintf("%d"
 func reprLong(in []byte, bo binary.ByteOrder) string   { return fmt.Sprintf("%d", bo.Uint32(in)) }
 func reprSLong(in []byte, bo binary.ByteOrder) string  { return fmt.Sprintf("%d", int32(bo.Uint32(in))) }
 func reprRational(in []byte, bo binary.ByteOrder) string {
-	return big.NewRat(int64(bo.Uint32(in)), int64(bo.Uint32(in[4:]))).String()
+	// Print the representation directly to prevent panics from divide by
+	// zero errors when using big.NewRat().
+	return fmt.Sprintf("%d/%d", int64(bo.Uint32(in)), int64(bo.Uint32(in[4:])))
 }
 func reprSRational(in []byte, bo binary.ByteOrder) string {
-	return big.NewRat(int64(int32(bo.Uint32(in))), int64(int32(bo.Uint32(in[4:])))).String()
+	// Print the representation directly to prevent panics from divide by
+	// zero errors when using big.NewRat()
+	return fmt.Sprintf("%d/%d", int64(int32(bo.Uint32(in))), int64(int32(bo.Uint32(in[4:]))))
 }
 func reprFloat(in []byte, bo binary.ByteOrder) string {
 	return fmt.Sprintf("%f", math.Float32frombits(bo.Uint32(in)))
