@@ -4,14 +4,7 @@ import (
 	"fmt"
 	"image"
 	"io"
-
-	"github.com/jonathanpittman/tiff"
 )
-
-func init() {
-	image.RegisterFormat("TIFF", tiff.TIFFBigEndian, DecodeTIFF, DecodeConfig)
-	image.RegisterFormat("TIFF", tiff.TIFFLitEndian, DecodeTIFF, DecodeConfig)
-}
 
 func DecodeTIFF(r io.Reader) (image.Image, error) {
 	/*
@@ -27,9 +20,4 @@ func DecodeBigTIFF(r io.Reader) (image.Image, error) {
 		bt, err := tiff.ParseBigTIFF(rars, nil, nil)
 	*/
 	return nil, fmt.Errorf("Not yet implemented.")
-}
-
-func DecodeConfig(r io.Reader) (out image.Config, err error) {
-	err = fmt.Errorf("Not yet implemented.")
-	return
 }
