@@ -1,6 +1,8 @@
 package image
 
 import (
+	"fmt"
+	"image"
 	"math/big"
 
 	"github.com/jonathanpittman/tiff"
@@ -16,7 +18,7 @@ Color
 Compression
 	Tag 259 (Compression)
 		1 = uncompressed (when encoding/writing, pack data into bytes tightly)
-		2 = CCITT Group 3 1-Dimensional Modified Huffman run length encoding
+		2 = CCITT Group 3 1-Dimensional Modified Huffman run length encoding (CCITT_Grp3_1-D_MH_RLE)
 		32773 = PackBits
 		Note: Data compression applies only to raster image data. All other TIFF fields are unaffected.
 		Note: Baseline TIFF readers must handle all three compression schemes.
@@ -78,4 +80,8 @@ type Bilevel struct {
 	YResolution               *big.Rat   `tifftag:"id=283"`
 	ResolutionUnit            uint16     `tifftag:"id=296"`
 	Rest                      []tiff.Tag // Any left over tags from an IFD.
+}
+
+func (bl *Bilevel) Process(tbr tiff.BReader) (image.Image, error) {
+	return nil, fmt.Errorf("tiff: bilevel handling not yet implemented")
 }
