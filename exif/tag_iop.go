@@ -2,10 +2,12 @@ package exif
 
 import "github.com/jonathanpittman/tiff"
 
+const InteroperabilityIFDTagID = 40965
+
 var (
 	iopTags     = tiff.NewTagSet("Interoperability", 0, 65535)
 	IOPTagSpace = tiff.NewTagSpace("Interoperability")
-	iopIFDTag   = tiff.NewTag(40965, "Interoperability IFD", nil)
+	iopIFDTag   = tiff.NewTag(InteroperabilityIFDTagID, "Interoperability IFD", nil)
 )
 
 func init() {

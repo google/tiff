@@ -2,10 +2,12 @@ package exif
 
 import "github.com/jonathanpittman/tiff"
 
+const ExifIFDTagID = 34665
+
 var (
 	exifTags     = tiff.NewTagSet("Exif", 0, 65535)
 	ExifTagSpace = tiff.NewTagSpace("Exif")
-	exifIFDTag   = tiff.NewTag(34665, "ExifIFD", nil)
+	exifIFDTag   = tiff.NewTag(ExifIFDTagID, "ExifIFD", nil)
 )
 
 // TODO: Pass in the slice of valid FieldType for each tag.
