@@ -69,17 +69,16 @@ Required Fields
 */
 
 type Bilevel struct {
-	ImageWidth                uint32     `tifftag:"id=256"`
-	ImageLength               uint32     `tifftag:"id=257"`
-	Compression               uint16     `tifftag:"id=259"`
-	PhotometricInterpretation uint16     `tifftag:"id=262"`
-	StripOffsets              []uint32   `tifftag:"id=273"`
-	RowsPerStrip              uint32     `tifftag:"id=278"`
-	StripByteCounts           []uint32   `tifftag:"id=279"`
-	XResolution               *big.Rat   `tifftag:"id=282"`
-	YResolution               *big.Rat   `tifftag:"id=283"`
-	ResolutionUnit            uint16     `tifftag:"id=296"`
-	Rest                      []tiff.Tag // Any left over tags from an IFD.
+	ImageWidth                uint32   `tifftag:"id=256"`
+	ImageLength               uint32   `tifftag:"id=257"`
+	Compression               uint16   `tifftag:"id=259"`
+	PhotometricInterpretation uint16   `tifftag:"id=262"`
+	StripOffsets              []uint32 `tifftag:"id=273"`
+	RowsPerStrip              uint32   `tifftag:"id=278"`
+	StripByteCounts           []uint32 `tifftag:"id=279"`
+	XResolution               *big.Rat `tifftag:"id=282"`
+	YResolution               *big.Rat `tifftag:"id=283"`
+	ResolutionUnit            uint16   `tifftag:"id=296"`
 }
 
 func (bl *Bilevel) Process(tbr tiff.BReader) (image.Image, error) {

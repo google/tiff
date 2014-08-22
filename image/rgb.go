@@ -35,5 +35,5 @@ Required Fields
 
 type FullColorRGB struct {
 	Grayscale
-	SamplesPerPixel []uint16 ``
+	SamplesPerPixel uint16 `tifftag:"id=277"`
 }

@@ -37,5 +37,5 @@ Required Fields
 
 type PaletteColor struct {
 	Grayscale
-	ColorMap []uint16 ``
+	ColorMap []uint16 `tifftag:"id=320"`
 }
