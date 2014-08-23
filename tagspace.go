@@ -163,7 +163,3 @@ func GetTagSpace(name string) TagSpace {
 	defer allTagSpaceMap.mu.RUnlock()
 	return allTagSpaceMap.list[name]
 }
-
-// TODO: Come up with a counting mechanism that counts which tagset is pulled
-// from for a tag identification whenever GetTag is called.  We can use this to
-// determine how the file leans in terms of the needed processing.
