@@ -96,7 +96,7 @@ func ParseTIFF(r ReadAtReadSeeker, tsp TagSpace, ftsp FieldTypeSpace) (out *TIFF
 		R:      br,
 	}
 
-	// Locate and process IFDs
+	// Locate and decode IFDs
 	for nextOffset := t.FirstOffset; nextOffset != 0; {
 		var ifd IFD
 		if ifd, err = ParseIFD(br, nextOffset, tsp, ftsp); err != nil {
