@@ -11,6 +11,8 @@ import (
 	"sync"
 )
 
+type FieldParser func(BReader, TagSpace, FieldTypeSpace) (Field, error)
+
 var (
 	tiffFieldPrintFullFieldValue bool
 	printMu                      sync.RWMutex
@@ -59,9 +61,9 @@ func (fv *fieldValue) MarshalJSON() ([]byte, error) {
 type Field interface {
 	Tag() Tag
 	Type() FieldType
-	Count() uint32
-	Offset() uint32
-	Value() FieldValue
+	Count() uint64
+	Offset() uint64
+	Value() FieldValue // TODO: Change to BReader??
 }
 
 type field struct {
@@ -97,16 +99,16 @@ func (f *field) Type() FieldType {
 	return f.ftsp.GetFieldType(f.entry.TypeID())
 }
 
-func (f *field) Count() uint32 {
-	return f.entry.Count()
+func (f *field) Count() uint64 {
+	return uint64(f.entry.Count())
 }
 
-func (f *field) Offset() uint32 {
+func (f *field) Offset() uint64 {
 	if f.Type().Size()*f.Count() <= 4 {
 		return 0
 	}
 	offsetBytes := f.entry.ValueOffset()
-	return f.Value().Order().Uint32(offsetBytes[:])
+	return uint64(f.value.Order().Uint32(offsetBytes[:]))
 }
 
 func (f *field) Value() FieldValue {
@@ -221,12 +223,12 @@ func ParseField(br BReader, tsp TagSpace, ftsp FieldTypeSpace) (out Field, err e
 	if f.entry, err = ParseEntry(br); err != nil {
 		return
 	}
-	fv := &fieldValue{order: br.Order()}
+	fv := &fieldValue{order: br.ByteOrder()}
 	valSize := int64(f.Count()) * int64(f.Type().Size())
 	valOffBytes := f.entry.ValueOffset()
 	if valSize > 4 {
 		fv.value = make([]byte, valSize)
-		offset := int64(br.Order().Uint32(valOffBytes[:]))
+		offset := int64(br.ByteOrder().Uint32(valOffBytes[:]))
 		if err = br.BReadSection(&fv.value, offset, valSize); err != nil {
 			return
 		}

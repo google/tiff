@@ -126,7 +126,7 @@ func NewReadAtReadSeeker(r io.Reader) ReadAtReadSeeker {
 type BReader interface {
 	BRead(data interface{}) error
 	BReadSection(data interface{}, offset int64, n int64) error
-	Order() binary.ByteOrder
+	ByteOrder() binary.ByteOrder
 	ReadAtReadSeeker
 }
 
@@ -168,7 +168,7 @@ func (b *bReader) Seek(offset int64, whence int) (int64, error) {
 	return b.r.Seek(offset, whence)
 }
 
-func (b *bReader) Order() binary.ByteOrder {
+func (b *bReader) ByteOrder() binary.ByteOrder {
 	return b.order
 }
 

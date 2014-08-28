@@ -52,15 +52,6 @@ func (fv *fieldValue) MarshalJSON() ([]byte, error) {
 	return json.Marshal(tmp)
 }
 
-// Field represents a field in an IFD for a BigTIFF file.
-type Field interface {
-	Tag() tiff.Tag
-	Type() tiff.FieldType
-	Count() uint64
-	Offset() uint64
-	Value() tiff.FieldValue
-}
-
 type field struct {
 	entry Entry
 
@@ -103,7 +94,7 @@ func (f *field) Offset() uint64 {
 		return 0
 	}
 	offsetBytes := f.entry.ValueOffset()
-	return f.Value().Order().Uint64(offsetBytes[:])
+	return f.value.Order().Uint64(offsetBytes[:])
 }
 
 func (f *field) Value() tiff.FieldValue {
@@ -196,7 +187,7 @@ func (f *field) MarshalJSON() ([]byte, error) {
 	return nil, nil
 }
 
-func ParseField(br tiff.BReader, tsp tiff.TagSpace, ftsp tiff.FieldTypeSpace) (out Field, err error) {
+func ParseField(br tiff.BReader, tsp tiff.TagSpace, ftsp tiff.FieldTypeSpace) (out tiff.Field, err error) {
 	if ftsp == nil {
 		ftsp = tiff.DefaultFieldTypeSpace
 	}
@@ -207,12 +198,12 @@ func ParseField(br tiff.BReader, tsp tiff.TagSpace, ftsp tiff.FieldTypeSpace) (o
 	if f.entry, err = ParseEntry(br); err != nil {
 		return
 	}
-	fv := &fieldValue{order: br.Order()}
+	fv := &fieldValue{order: br.ByteOrder()}
 	valSize := int64(f.Count()) * int64(f.Type().Size())
 	valOffBytes := f.entry.ValueOffset()
 	if valSize > 8 {
 		fv.value = make([]byte, valSize)
-		offset := int64(br.Order().Uint64(valOffBytes[:])) // Hope this does not go negative
+		offset := int64(br.ByteOrder().Uint64(valOffBytes[:])) // Hope this does not go negative
 		if err = br.BReadSection(&fv.value, offset, valSize); err != nil {
 			return
 		}

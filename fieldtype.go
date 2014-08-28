@@ -15,19 +15,19 @@ import (
 type FieldType interface {
 	ID() uint16
 	Name() string
-	Size() uint32
+	Size() uint64
 	Signed() bool
 	Repr() func([]byte, binary.ByteOrder) string
 }
 
-func NewFieldType(id uint16, name string, size uint32, signed bool, repr func([]byte, binary.ByteOrder) string) FieldType {
+func NewFieldType(id uint16, name string, size uint64, signed bool, repr func([]byte, binary.ByteOrder) string) FieldType {
 	return &fieldType{id: id, name: name, size: size, signed: signed, repr: repr}
 }
 
 type fieldType struct {
 	id     uint16
 	name   string
-	size   uint32
+	size   uint64
 	signed bool
 	repr   func([]byte, binary.ByteOrder) string
 }
@@ -43,7 +43,7 @@ func (ft *fieldType) Name() string {
 	return fmt.Sprintf("UNNAMED_FIELD_TYPE_%d", ft.id)
 }
 
-func (ft *fieldType) Size() uint32 {
+func (ft *fieldType) Size() uint64 {
 	return ft.size
 }
 
@@ -59,7 +59,7 @@ func (ft *fieldType) MarshalJSON() ([]byte, error) {
 	tmp := struct {
 		ID     uint16
 		Name   string
-		Size   uint32
+		Size   uint64
 		Signed bool
 	}{
 		ID:     ft.id,

@@ -1,52 +1,46 @@
 package bigtiff
 
 import (
-	"encoding/binary"
 	"fmt"
+	"io"
 
 	"github.com/jonathanpittman/tiff"
 )
 
-type ErrUnsuppTIFFVersion struct {
-	Version uint16
-}
-
-func (eutv ErrUnsuppTIFFVersion) Error() string {
-	return fmt.Sprintf("bigtiff: unsupported version %d", eutv.Version)
-}
-
-type Header struct {
-	Order       uint16 // "MM" or "II"
-	Version     uint16 // Must be 43 (0x2B)
-	OffsetSize  uint16 // Size in bytes used for offset values
-	Constant    uint16 // Must be 0
-	FirstOffset uint64 // Offset location for IFD 0
-}
-
-func (h Header) String() string {
-	fmtStr := `
-Order: %q (%s)
-Version: %d
-OffsetSize: %d
-Constant: %d
-FirstOffset: %d
-`
-	orderStr := string([]byte{byte(h.Order >> 8), byte(h.Order)})
-	orderName := tiff.GetByteOrder(h.Order).String()
-	return fmt.Sprintf(fmtStr, orderStr, orderName, h.Version, h.OffsetSize, h.Constant, h.FirstOffset)
-}
-
 type BigTIFF struct {
-	Header
-	IFDs []IFD
-	R    tiff.BReader
+	ordr       [2]byte
+	vers       uint16
+	offsetSize uint16
+	firstOff   uint64
+	ifds       []tiff.IFD
+	r          tiff.BReader
 }
 
-func (bt *BigTIFF) ByteOrder() binary.ByteOrder {
-	return tiff.GetByteOrder(bt.Order)
+func (t *BigTIFF) Order() string {
+	return string(t.ordr[:])
 }
 
-func ParseBigTIFF(r tiff.ReadAtReadSeeker, tsp tiff.TagSpace, ftsp tiff.FieldTypeSpace) (out *BigTIFF, err error) {
+func (t *BigTIFF) Version() uint16 {
+	return t.vers
+}
+
+func (t *BigTIFF) OffsetSize() uint16 {
+	return t.offsetSize
+}
+
+func (t *BigTIFF) FirstOffset() uint64 {
+	return t.firstOff
+}
+
+func (t *BigTIFF) IFDs() []tiff.IFD {
+	return t.ifds
+}
+
+func (t *BigTIFF) R() tiff.BReader {
+	return t.r
+}
+
+func ParseBigTIFF(ordr [2]byte, vers uint16, br tiff.BReader, tsp tiff.TagSpace, ftsp tiff.FieldTypeSpace) (out tiff.TIFF, err error) {
 	if tsp == nil {
 		tsp = tiff.DefaultTagSpace
 	}
@@ -54,69 +48,39 @@ func ParseBigTIFF(r tiff.ReadAtReadSeeker, tsp tiff.TagSpace, ftsp tiff.FieldTyp
 		ftsp = tiff.DefaultFieldTypeSpace
 	}
 
-	var hdr Header
+	var restOfHdr [12]byte
 
-	// Get the byte order
-	if err = binary.Read(r, binary.BigEndian, &hdr.Order); err != nil {
-		return
-	}
-	// Check the byte order
-	order := tiff.GetByteOrder(hdr.Order)
-	if order == nil {
-		return nil, fmt.Errorf("tiff: invalid byte order %q", []byte{byte(hdr.Order >> 8), byte(hdr.Order)})
+	if _, err = io.ReadFull(br, restOfHdr[:]); err != nil {
+		return nil, fmt.Errorf("bigtiff: unable to read the rest of the header: %v", err)
 	}
 
-	br := tiff.NewBReader(r, order)
-
-	// Get the TIFF type
-	if err = br.BRead(&hdr.Version); err != nil {
-		return
-	}
-	// Check the type (43 for BigTIFF)
-	if hdr.Version != Version {
-		return nil, ErrUnsuppTIFFVersion{hdr.Version}
+	offsetSize := br.ByteOrder().Uint16(restOfHdr[:2])
+	if offsetSize > 8 {
+		return nil, fmt.Errorf("bigtiff: unsupported offset size %d", offsetSize)
 	}
 
-	// Get the offset size
-	if err = br.BRead(&hdr.OffsetSize); err != nil {
-		return
-	}
-	// Check the offset size (For now, only support an offset size of 8 for uint64.)
-	if hdr.OffsetSize != 8 {
-		return nil, fmt.Errorf("tiff: invalid offset size of %d", hdr.OffsetSize)
-	}
+	// Skip restOfHdr[2:4] since it is a constant that is normally always 0x0000 and has no use yet.
 
-	// Get the constant
-	if err = br.BRead(&hdr.Constant); err != nil {
-		return
-	}
-	// Check the constant
-	if hdr.Constant != 0 {
-		return nil, fmt.Errorf("tiff: invalid header constant, %d != 0", hdr.Constant)
-	}
-
-	// Get the offset to the first IFD
-	if err = br.BRead(&hdr.FirstOffset); err != nil {
-		return
-	}
+	firstOffset := br.ByteOrder().Uint64(restOfHdr[4:])
 	// Check the offset to the first IFD (ensure it is past the end of the header)
-	if hdr.FirstOffset < 16 {
-		return nil, fmt.Errorf("tiff: invalid offset to first IFD, %d < 16", hdr.FirstOffset)
+	if firstOffset < 16 {
+		return nil, fmt.Errorf("bigtiff: invalid offset to first IFD, %d < 16", firstOffset)
 	}
 
-	bt := &BigTIFF{
-		Header: hdr,
-		R:      br,
-	}
+	t := &BigTIFF{ordr: ordr, vers: vers, offsetSize: offsetSize, firstOff: firstOffset, r: br}
 
-	// Locate and process IFDs
-	for nextOffset := bt.FirstOffset; nextOffset != 0; {
-		var ifd IFD
+	// Locate and decode IFDs
+	for nextOffset := firstOffset; nextOffset != 0; {
+		var ifd tiff.IFD
 		if ifd, err = ParseIFD(br, nextOffset, tsp, ftsp); err != nil {
-			return
+			return nil, err
 		}
-		bt.IFDs = append(bt.IFDs, ifd)
+		t.ifds = append(t.ifds, ifd)
 		nextOffset = ifd.NextOffset()
 	}
-	return bt, nil
+	return t, nil
+}
+
+func init() {
+	tiff.RegisterVersion(Version, ParseBigTIFF)
 }

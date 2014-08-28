@@ -7,11 +7,13 @@ import (
 	"text/tabwriter"
 )
 
+type IFDParser func(br BReader, offset uint64, tsp TagSpace, ftsp FieldTypeSpace) (IFD, error)
+
 // IFD represents the data structure of an IFD in a TIFF File.
 type IFD interface {
-	NumEntries() uint16
+	NumEntries() uint64
 	Fields() []Field
-	NextOffset() uint32
+	NextOffset() uint64
 	HasField(tagID uint16) bool
 	GetField(tagID uint16) Field
 }
@@ -23,16 +25,16 @@ type imageFileDirectory struct {
 	fieldMap   map[uint16]Field
 }
 
-func (ifd *imageFileDirectory) NumEntries() uint16 {
-	return ifd.numEntries
+func (ifd *imageFileDirectory) NumEntries() uint64 {
+	return uint64(ifd.numEntries)
 }
 
 func (ifd *imageFileDirectory) Fields() []Field {
 	return ifd.fields
 }
 
-func (ifd *imageFileDirectory) NextOffset() uint32 {
-	return ifd.nextOffset
+func (ifd *imageFileDirectory) NextOffset() uint64 {
+	return uint64(ifd.nextOffset)
 }
 
 func (ifd *imageFileDirectory) HasField(tagID uint16) bool {
@@ -63,7 +65,7 @@ Fields (%d):
 	return fmt.Sprintf(fmtStr, ifd.numEntries, ifd.nextOffset, len(ifd.fields), buf.String())
 }
 
-func ParseIFD(br BReader, offset uint32, tsp TagSpace, ftsp FieldTypeSpace) (out IFD, err error) {
+func ParseIFD(br BReader, offset uint64, tsp TagSpace, ftsp FieldTypeSpace) (out IFD, err error) {
 	if br == nil {
 		return nil, errors.New("tiff: no BReader supplied")
 	}
