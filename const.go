@@ -8,9 +8,10 @@ import (
 // TIFF along with each byte ordering.  This is mostly useful for registration
 // with the "image" package from the Go standard library.
 const (
-	TIFFBigEndian        = "MM\x00\x2A"
-	TIFFLitEndian        = "II\x2A\x00"
-	Version       uint16 = 0x2A
+	MagicBigEndian        = "MM\x00\x2A"
+	MagicLitEndian        = "II\x2A\x00"
+	Version        uint16 = 0x2A
+	VersionName    string = "TIFF"
 )
 
 // These constants represent the byte order options present at the beginning of
