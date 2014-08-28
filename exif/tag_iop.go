@@ -7,7 +7,7 @@ const InteroperabilityIFDTagID = 40965
 var (
 	iopTags     = tiff.NewTagSet("Interoperability", 0, 65535)
 	IOPTagSpace = tiff.NewTagSpace("Interoperability")
-	iopIFDTag   = tiff.NewTag(InteroperabilityIFDTagID, "Interoperability IFD", nil)
+	iopIFDTag   = tiff.NewTag(InteroperabilityIFDTagID, "InteroperabilityIFD", nil)
 )
 
 func init() {
