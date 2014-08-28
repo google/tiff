@@ -65,7 +65,7 @@ type TIFF interface {
 	R() BReader
 }
 
-func Parse(r io.Reader, tsp TagSpace, ftsp FieldTypeSpace) (TIFF, error) {
+func Parse(r ReadAtReadSeeker, tsp TagSpace, ftsp FieldTypeSpace) (TIFF, error) {
 	if tsp == nil {
 		tsp = DefaultTagSpace
 	}
@@ -91,7 +91,7 @@ func Parse(r io.Reader, tsp TagSpace, ftsp FieldTypeSpace) (TIFF, error) {
 	if tp == nil {
 		return nil, ErrUnsuppTIFFVersion{vers}
 	}
-	return tp(orderBytes, vers, NewBReader(NewReadAtReadSeeker(r), byteOrder), tsp, ftsp)
+	return tp(orderBytes, vers, NewBReader(r, byteOrder), tsp, ftsp)
 }
 
 // Type tiff represents a standard tiff structure with 32 bit offsets.
