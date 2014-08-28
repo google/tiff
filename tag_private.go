@@ -42,13 +42,13 @@ func init() {
 	PrivateTags.Register(NewTag(34909, "HylaFAX FaxSubAddress", nil))
 	PrivateTags.Register(NewTag(34910, "HylaFAX FaxRecvTime", nil))
 	PrivateTags.Register(NewTag(37724, "ImageSourceData", nil))
-	PrivateTags.Register(NewTag(40965, "Interoperability IFD", nil))
 	PrivateTags.Register(NewTag(42112, "GDAL_METADATA", nil))
 	PrivateTags.Register(NewTag(42113, "GDAL_NODATA", nil))
 	PrivateTags.Register(NewTag(50215, "Oce Scanjob Description", nil))
 	PrivateTags.Register(NewTag(50216, "Oce Application Selector", nil))
 	PrivateTags.Register(NewTag(50217, "Oce Identification Number", nil))
 	PrivateTags.Register(NewTag(50218, "Oce ImageLogic Characteristics", nil))
+	PrivateTags.Register(NewTag(50341, "EpsonPrintImageMatching", nil))
 
 	// Alias Sketchbook Pro
 	PrivateTags.Register(NewTag(50784, "Alias Layer Metadata", nil))
