@@ -2,41 +2,40 @@ package image
 
 import (
 	"bytes"
-	"image"
 	"sort"
 	"sync"
 
 	"github.com/jonathanpittman/tiff"
 )
 
-type Handler interface {
-	Process(*tiff.TIFF) (image.Image, error)
-	GetConfig(*tiff.TIFF) (image.Config, error)
-	CanHandle(*tiff.TIFF) bool
-}
-
 var (
 	// Handlers based on the value in the Make tag (tag id 271)
-	altHandlersFromMakeTagValue = struct {
+	// If a manufacturer specific package exists and is imported, one would
+	// hope it would know best how to handle decoding the tiff.
+	altTIFFHandlersFromMakeTagValue = struct {
 		mu            sync.RWMutex
-		makeToHandler map[string]Handler
+		makeToHandler map[string]TIFFHandler
 	}{
-		makeToHandler: make(map[string]Handler, 1),
+		makeToHandler: make(map[string]TIFFHandler, 1),
 	}
 
 	// Handlers based on the presence of a tag id in IFD0.
-	altHandlersFromTagPresence = struct {
+	altTIFFHandlersFromTagPresence = struct {
 		mu           sync.RWMutex
-		tagToHandler map[uint16]Handler
+		tagToHandler map[uint16]TIFFHandler
 	}{
-		tagToHandler: make(map[uint16]Handler, 1),
+		tagToHandler: make(map[uint16]TIFFHandler, 1),
 	}
 )
 
+func findAlternateIFDHandler(ifd tiff.IFD) IFDHandler {
+	return nil
+}
+
 // For now, findAlternates will only check against two concepts.  One, is the
 // "Make" tag and the other checks the presence of tags.
-func findAlternates(t *tiff.TIFF) Handler {
-	ifd0 := t.IFDs[0]
+func findAlternateTIFFHandler(t tiff.TIFF) TIFFHandler {
+	ifd0 := t.IFDs()[0]
 	// Do tag presence check first.  This is useful for identifying
 	// tiff files that conform to a certain specification that uses
 	// a tag to identify that specification.  For example, tiff/ep
@@ -74,35 +73,35 @@ func findAlternates(t *tiff.TIFF) Handler {
 	return nil
 }
 
-func RegisterHandlerByMake(m string, h Handler) {
-	altHandlersFromMakeTagValue.mu.Lock()
-	defer altHandlersFromMakeTagValue.mu.Unlock()
-	altHandlersFromMakeTagValue.makeToHandler[m] = h
+func RegisterHandlerByMake(m string, h TIFFHandler) {
+	altTIFFHandlersFromMakeTagValue.mu.Lock()
+	defer altTIFFHandlersFromMakeTagValue.mu.Unlock()
+	altTIFFHandlersFromMakeTagValue.makeToHandler[m] = h
 }
 
-func GetHandlerByMake(m string) Handler {
-	altHandlersFromMakeTagValue.mu.RLock()
-	defer altHandlersFromMakeTagValue.mu.RUnlock()
-	return altHandlersFromMakeTagValue.makeToHandler[m]
+func GetHandlerByMake(m string) TIFFHandler {
+	altTIFFHandlersFromMakeTagValue.mu.RLock()
+	defer altTIFFHandlersFromMakeTagValue.mu.RUnlock()
+	return altTIFFHandlersFromMakeTagValue.makeToHandler[m]
 }
 
-func RegisterHandlerByTagPresence(t uint16, h Handler) {
-	altHandlersFromTagPresence.mu.Lock()
-	defer altHandlersFromTagPresence.mu.Unlock()
-	altHandlersFromTagPresence.tagToHandler[t] = h
+func RegisterHandlerByTagPresence(t uint16, h TIFFHandler) {
+	altTIFFHandlersFromTagPresence.mu.Lock()
+	defer altTIFFHandlersFromTagPresence.mu.Unlock()
+	altTIFFHandlersFromTagPresence.tagToHandler[t] = h
 }
 
-func GetHandlerByTagPresence(t uint16) Handler {
-	altHandlersFromTagPresence.mu.RLock()
-	defer altHandlersFromTagPresence.mu.RUnlock()
-	return altHandlersFromTagPresence.tagToHandler[t]
+func GetHandlerByTagPresence(t uint16) TIFFHandler {
+	altTIFFHandlersFromTagPresence.mu.RLock()
+	defer altTIFFHandlersFromTagPresence.mu.RUnlock()
+	return altTIFFHandlersFromTagPresence.tagToHandler[t]
 }
 
 func ListRegisteredTagPresenceIDs() []uint16 {
-	altHandlersFromTagPresence.mu.RLock()
-	defer altHandlersFromTagPresence.mu.RUnlock()
-	ids := make([]uint16, 0, len(altHandlersFromTagPresence.tagToHandler))
-	for k := range altHandlersFromTagPresence.tagToHandler {
+	altTIFFHandlersFromTagPresence.mu.RLock()
+	defer altTIFFHandlersFromTagPresence.mu.RUnlock()
+	ids := make([]uint16, 0, len(altTIFFHandlersFromTagPresence.tagToHandler))
+	for k := range altTIFFHandlersFromTagPresence.tagToHandler {
 		ids = append(ids, k)
 	}
 	sort.Sort(uint16Slice(ids))
