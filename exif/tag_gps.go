@@ -6,14 +6,12 @@ import (
 	"github.com/jonathanpittman/tiff"
 )
 
-// TODO: Pass in the slice of valid FieldType for each tag.
-
 const GPSIFDTagID = 34853
 
 var (
 	gpsTags     = tiff.NewTagSet("GPS", 0, 65535)
 	GPSTagSpace = tiff.NewTagSpace("GPS")
-	gpsIFDTag   = tiff.NewTag(GPSIFDTagID, "GPS IFD", nil)
+	gpsIFDTag   = tiff.NewTag(GPSIFDTagID, "GPSIFD", nil)
 )
 
 func init() {
