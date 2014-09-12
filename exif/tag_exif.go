@@ -2,6 +2,11 @@ package exif
 
 import "github.com/jonathanpittman/tiff"
 
+// http://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
+// http://www.exiv2.org/tags.html
+// http://www.cipa.jp/exifprint/index_e.html
+// http://www.jeita.or.jp/cgi-bin/standard_e/list.cgi?cateid=1&subcateid=4
+
 const ExifIFDTagID = 34665
 
 var (
@@ -10,11 +15,14 @@ var (
 	exifIFDTag   = tiff.NewTag(ExifIFDTagID, "ExifIFD", nil)
 )
 
-// TODO: Pass in the slice of valid FieldType for each tag.
+// TODO: Break up these exif tags into sets based on the exif version.  They
+//       still all likely belong in the same space though.  For an example, take
+//       a look at the way DNG was broken up.  Tags introduced in newer versions
+//       are added to a set named for the version.  They still all get put into
+//       the same space, just the sets are identified separately.
 func init() {
 	tiff.PrivateTags.Register(exifIFDTag)
 
-	// http://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
 	exifTags.Register(tiff.NewTag(33434, "ExposureTime", nil))
 	exifTags.Register(tiff.NewTag(33437, "FNumber", nil))
 	exifTags.Register(tiff.NewTag(34850, "ExposureProgram", nil))
@@ -22,6 +30,7 @@ func init() {
 	exifTags.Register(tiff.NewTag(34855, "ISOSpeedRatings", nil))
 	exifTags.Register(tiff.NewTag(34856, "OECF", nil))
 	exifTags.Register(tiff.NewTag(34864, "SensitivityType", nil))
+	exifTags.Register(tiff.NewTag(34866, "RecommendedExposureIndex", nil))
 	exifTags.Register(tiff.NewTag(36864, "ExifVersion", nil))
 	exifTags.Register(tiff.NewTag(36867, "DateTimeOriginal", nil))
 	exifTags.Register(tiff.NewTag(36868, "DateTimeDigitized", nil))
@@ -72,6 +81,12 @@ func init() {
 	exifTags.Register(tiff.NewTag(41995, "DeviceSettingDescription", nil))
 	exifTags.Register(tiff.NewTag(41996, "SubjectDistanceRange", nil))
 	exifTags.Register(tiff.NewTag(42016, "ImageUniqueID", nil))
+	exifTags.Register(tiff.NewTag(42032, "CameraOwnerName", nil))
+	exifTags.Register(tiff.NewTag(42033, "BodySerialNumber", nil))
+	exifTags.Register(tiff.NewTag(42034, "LensSpecification", nil))
+	exifTags.Register(tiff.NewTag(42035, "LensMake", nil))
+	exifTags.Register(tiff.NewTag(42036, "LensModel", nil))
+	exifTags.Register(tiff.NewTag(42037, "LensSerialNumber", nil))
 
 	// Tags that indicate the offsets to the respective IFDs.
 	exifTags.Register(exifIFDTag)
