@@ -56,7 +56,8 @@ func (ftsp *fieldTypeSpace) GetFieldType(id uint16) FieldType {
 			return ft
 		}
 	}
-	return NewFieldType(id, fmt.Sprintf("UNKNOWN_FIELDTYPE_%d", id), 1, false, nil)
+	// For unknown field types, just represent them as bytes.
+	return NewFieldType(id, fmt.Sprintf("UNKNOWN_FIELDTYPE_%d", id), 1, false, reprByte, rvalByte, typByte)
 }
 
 func (ftsp *fieldTypeSpace) GetFieldTypeSet(name string) (FieldTypeSet, bool) {

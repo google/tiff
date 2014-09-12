@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"sync"
 )
 
@@ -127,8 +128,8 @@ func (f *field) String() string {
 		theFTSP = DefaultFieldTypeSpace
 	}
 	var valueRep string
-	switch f.Type() {
-	case FTAscii:
+	switch f.Type().ReflectType().Kind() {
+	case reflect.String:
 		if GetTiffFieldPrintFullFieldValue() {
 			valueRep = fmt.Sprintf("%q", f.value.Bytes()[:f.Count()])
 		} else {
@@ -192,8 +193,8 @@ func (f *field) String() string {
 		}
 	}
 	tagID := f.Tag().ID()
-	return fmt.Sprintf(`<Tag: (%#04x/%05d) %v	Type: %v	Count: %d	Offset: %d	Value: %s	FieldTypeSpace: %q	TagSpaceSet: "%s.%s">`,
-		tagID, tagID, f.Tag().Name(), f.Type().Name(), f.Count(), f.Offset(), valueRep,
+	return fmt.Sprintf(`<Tag: (%#04x/%05[1]d) %v	Type: (%02d) %v	Count: %d	Offset: %d	Value: %s	FieldTypeSpace: %q	TagSpaceSet: "%s.%s">`,
+		tagID, f.Tag().Name(), f.Type().ID(), f.Type().Name(), f.Count(), f.Offset(), valueRep,
 		theFTSP.Name(), theTSP.Name(), theTSP.GetTagSetNameFromTag(tagID))
 }
 

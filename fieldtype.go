@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
+	"reflect"
 )
 
 // A FieldType represents all of the necessary pieces of information one needs to
@@ -17,19 +18,35 @@ type FieldType interface {
 	Name() string
 	Size() uint64
 	Signed() bool
-	Repr() func([]byte, binary.ByteOrder) string
+	ReflectType() reflect.Type
+	Repr() FieldTypeRepr
+	Valuer() FieldTypeValuer
 }
 
-func NewFieldType(id uint16, name string, size uint64, signed bool, repr func([]byte, binary.ByteOrder) string) FieldType {
-	return &fieldType{id: id, name: name, size: size, signed: signed, repr: repr}
+func NewFieldType(id uint16, name string, size uint64, signed bool, repr FieldTypeRepr, rval FieldTypeValuer, typ reflect.Type) FieldType {
+	return &fieldType{
+		id:     id,
+		name:   name,
+		size:   size,
+		signed: signed,
+		repr:   repr,
+		rval:   rval,
+		typ:    typ,
+	}
 }
+
+type FieldTypeRepr func([]byte, binary.ByteOrder) string
+
+type FieldTypeValuer func([]byte, binary.ByteOrder) reflect.Value
 
 type fieldType struct {
 	id     uint16
 	name   string
 	size   uint64
 	signed bool
-	repr   func([]byte, binary.ByteOrder) string
+	repr   FieldTypeRepr
+	rval   FieldTypeValuer
+	typ    reflect.Type
 }
 
 func (ft *fieldType) ID() uint16 {
@@ -51,8 +68,16 @@ func (ft *fieldType) Signed() bool {
 	return ft.signed
 }
 
-func (ft *fieldType) Repr() func([]byte, binary.ByteOrder) string {
+func (ft *fieldType) ReflectType() reflect.Type {
+	return ft.typ
+}
+
+func (ft *fieldType) Repr() FieldTypeRepr {
 	return ft.repr
+}
+
+func (ft *fieldType) Valuer() FieldTypeValuer {
+	return ft.rval
 }
 
 func (ft *fieldType) MarshalJSON() ([]byte, error) {
