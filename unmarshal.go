@@ -442,8 +442,8 @@ type ErrUnsuppConversion struct {
 	To   reflect.Type
 }
 
-func (euc ErrUnsuppConversion) Error() string {
-	return fmt.Sprintf("tiff: unmarshal: no support for converting field type %q (id: %d) to %q", euc.From.Name(), euc.From.ID(), euc.To)
+func (e ErrUnsuppConversion) Error() string {
+	return fmt.Sprintf("tiff: unmarshal: no support for converting field type %q (id: %d) to %q", e.From.Name(), e.From.ID(), e.To)
 }
 
 type ErrUnsuppStructField struct {
@@ -452,12 +452,12 @@ type ErrUnsuppStructField struct {
 	Problem string
 }
 
-func (eusf ErrUnsuppStructField) Error() string {
+func (e ErrUnsuppStructField) Error() string {
 	var msg string
-	if eusf.Problem != "" {
-		msg = ": " + eusf.Problem
+	if e.Problem != "" {
+		msg = ": " + e.Problem
 	}
-	return fmt.Sprintf("tiff: unmarshal: error for field %s of type %s%s", eusf.T.Field(eusf.Field).Name, eusf.T.Name(), msg)
+	return fmt.Sprintf("tiff: unmarshal: error for field %s of type %s%s", e.T.Field(e.Field).Name, e.T.Name(), msg)
 }
 
 func unmarshalVal(data []byte, bo binary.ByteOrder, ft FieldType, v reflect.Value) error {

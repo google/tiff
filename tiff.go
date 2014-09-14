@@ -38,16 +38,16 @@ type ErrInvalidByteOrder struct {
 	Order [2]byte
 }
 
-func (eibo ErrInvalidByteOrder) Error() string {
-	return fmt.Sprintf("tiff: invalid byte order %q", eibo.Order)
+func (e ErrInvalidByteOrder) Error() string {
+	return fmt.Sprintf("tiff: invalid byte order %q", e.Order)
 }
 
 type ErrUnsuppTIFFVersion struct {
 	Version uint16
 }
 
-func (eutv ErrUnsuppTIFFVersion) Error() string {
-	return fmt.Sprintf("tiff: unsupported version %d", eutv.Version)
+func (e ErrUnsuppTIFFVersion) Error() string {
+	return fmt.Sprintf("tiff: unsupported version %d", e.Version)
 }
 
 type Header interface {
