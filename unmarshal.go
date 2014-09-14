@@ -375,21 +375,6 @@ func ParseTiffIFDStructTag(text string) *ifdStructTag {
 }
 
 /*
-NOTE: This is sub-optimal.  The general idea of UnmarshalIFD in this since is
-that you take an already existing IFD and use its values to fill in a struct.
-The problem is that most of the time, any SubIFDs that may exist in a file have
-not actually been parsed out yet by the standard tiff parsing functions (for
-good reason).  So this may not be a good fit for inclusion in UnmarshalIFD.  It
-may be better to have people parse the SubIFDs and then run them through
-UnmarshalIFD on a case by case basis.  At the same time, leaving the struct tag
-concept in tact should not cause any harm.  It may be useful for those wanting
-to implement other unmarshaling functions that focus on specific tiff
-structures that may be aware of the validity and details of certain SubIFDs.
-What we can do, however, is create a separate UnmarshalSubIFDs call that takes
-the same parameters and object as UnmarshalIFD, but is specific to Classic TIFF.
-It would not be forced on anyone.  In BigTIFF, this same concept could apply,
-but it would be specific to BigTIFF uses.
-
 Sub-IFD Struct Tag:
   Representation:
     `tiff:"subifd,tag=330,idx=0"`
