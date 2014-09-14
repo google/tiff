@@ -1,6 +1,7 @@
 package tiff
 
 import (
+	"bytes"
 	"encoding/binary"
 	"fmt"
 	"math"
@@ -37,7 +38,9 @@ func reprDouble(in []byte, bo binary.ByteOrder) string {
 /* FieldTypeValuer */
 func rvalByte(in []byte, bo binary.ByteOrder) reflect.Value  { return reflect.ValueOf(in[0]) }
 func rvalSByte(in []byte, bo binary.ByteOrder) reflect.Value { return reflect.ValueOf(int8(in[0])) }
-func rvalASCII(in []byte, bo binary.ByteOrder) reflect.Value { return reflect.ValueOf(string(in)) }
+func rvalASCII(in []byte, bo binary.ByteOrder) reflect.Value {
+	return reflect.ValueOf(string(bytes.TrimRight(in, "\x00")))
+}
 func rvalShort(in []byte, bo binary.ByteOrder) reflect.Value { return reflect.ValueOf(bo.Uint16(in)) }
 func rvalSShort(in []byte, bo binary.ByteOrder) reflect.Value {
 	return reflect.ValueOf(int16(bo.Uint16(in)))
