@@ -578,6 +578,10 @@ func UnmarshalIFD(ifd IFD, out interface{}) error {
 		if sTag == nil {
 			continue
 		}
+		if sTag.Type != "ifd" && sTag.Type != "field" {
+			continue
+		}
+
 		vf := v.Field(i)
 		vft := vf.Type()
 		vftk := vft.Kind()
@@ -664,10 +668,6 @@ func UnmarshalIFD(ifd IFD, out interface{}) error {
 					}
 				}
 			}
-		case "subifd":
-			// This is just here to ignore subifd cases instead of logging an error.
-		default:
-			log.Printf("tiff: UnmarshalIFD: unsupported tiff struct tag type %q\n", sTag.Type)
 		}
 	}
 	return nil
