@@ -3,6 +3,7 @@ package image
 import (
 	"fmt"
 	"image"
+	"image/color"
 	"math/big"
 
 	"github.com/jonathanpittman/tiff"
@@ -68,19 +69,55 @@ Required Fields
 	ResolutionUnit
 */
 
-type Bilevel struct {
-	ImageWidth                uint32   `tifftag:"id=256"`
-	ImageLength               uint32   `tifftag:"id=257"`
-	Compression               uint16   `tifftag:"id=259"`
-	PhotometricInterpretation uint16   `tifftag:"id=262"`
-	StripOffsets              []uint32 `tifftag:"id=273"`
-	RowsPerStrip              uint32   `tifftag:"id=278"`
-	StripByteCounts           []uint32 `tifftag:"id=279"`
-	XResolution               *big.Rat `tifftag:"id=282"`
-	YResolution               *big.Rat `tifftag:"id=283"`
-	ResolutionUnit            uint16   `tifftag:"id=296"`
+type bilevelDecoder struct {
+	ImageWidth                uint32   `tiff:"field,tag=256"`
+	ImageLength               uint32   `tiff:"field,tag=257"`
+	Compression               uint16   `tiff:"field,tag=259"`
+	PhotometricInterpretation uint16   `tiff:"field,tag=262"`
+	StripOffsets              []uint32 `tiff:"field,tag=273"`
+	RowsPerStrip              uint32   `tiff:"field,tag=278"`
+	StripByteCounts           []uint32 `tiff:"field,tag=279"`
+	XResolution               *big.Rat `tiff:"field,tag=282"`
+	YResolution               *big.Rat `tiff:"field,tag=283"`
+	ResolutionUnit            uint16   `tiff:"field,tag=296"`
+
+	br  tiff.BReader
+	img image.Image
 }
 
-func (bl *Bilevel) Process(tbr tiff.BReader) (image.Image, error) {
-	return nil, fmt.Errorf("tiff: bilevel handling not yet implemented")
+func (bld *bilevelDecoder) Image() (image.Image, error) {
+	if bld.img == nil {
+		return nil, fmt.Errorf("tiff/image: no baseline bilevel image found")
+		// Do decoding here...
+	}
+	return bld.img, nil
+}
+
+func (bld *bilevelDecoder) Config() (cfg image.Config, err error) {
+	cfg.Height = int(bld.ImageLength)
+	cfg.Width = int(bld.ImageWidth)
+	// Maybe we should investigate creating a B/W model
+	cfg.ColorModel = color.GrayModel
+	return
+}
+
+type Bilevel struct{}
+
+func (Bilevel) Decoder(ifd tiff.IFD, br tiff.BReader) (dec Decoder, err error) {
+	blDec := &bilevelDecoder{br: br}
+	if err = tiff.UnmarshalIFD(ifd, blDec); err != nil {
+		return
+	}
+	fmt.Printf("bilevel: %#v\n", blDec)
+	return blDec, nil
+}
+
+func (Bilevel) CanHandle(ifd tiff.IFD) bool {
+	requiredTags := []uint16{256, 257, 259, 262, 273}
+	for _, tagID := range requiredTags {
+		if !ifd.HasField(tagID) {
+			return false
+		}
+	}
+	return true
 }

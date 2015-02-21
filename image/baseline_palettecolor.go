@@ -1,5 +1,13 @@
 package image
 
+import (
+	"fmt"
+	"image"
+	"image/color"
+
+	"github.com/jonathanpittman/tiff"
+)
+
 /* Baseline Palette-Color
 
 Differences from Grayscale Images
@@ -35,7 +43,35 @@ Required Fields
 	ColorMap
 */
 
-type PaletteColor struct {
-	Grayscale
-	ColorMap []uint16 `tifftag:"id=320"`
+type paletteColorDecoder struct {
+	grayscaleDecoder `tiff:"ifd"`
+	ColorMap         []uint16 `tiff:"field,tag=320"`
+}
+
+func (pcd *paletteColorDecoder) Image() (image.Image, error) {
+	if pcd.img == nil {
+		return nil, fmt.Errorf("tiff/image: no baseline palette color image found")
+	}
+	return pcd.img, nil
+}
+
+func (pcd *paletteColorDecoder) Config() (cfg image.Config, err error) {
+	cfg.Height = int(pcd.ImageLength)
+	cfg.Width = int(pcd.ImageWidth)
+	cfg.ColorModel = color.Palette{} // TODO: Take this from the ColorMap field
+	return
+}
+
+type PaletteColor struct{}
+
+func (PaletteColor) Decoder(ifd tiff.IFD, br tiff.BReader) (dec Decoder, err error) {
+	pcDec := &paletteColorDecoder{grayscaleDecoder: grayscaleDecoder{bilevelDecoder: bilevelDecoder{br: br}}}
+	if err = tiff.UnmarshalIFD(ifd, pcDec); err != nil {
+		return
+	}
+	return pcDec, nil
+}
+
+func (PaletteColor) CanHandle(ifd tiff.IFD) bool {
+	return new(Grayscale).CanHandle(ifd) && ifd.HasField(320)
 }

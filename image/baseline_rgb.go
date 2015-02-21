@@ -1,5 +1,13 @@
 package image
 
+import (
+	"fmt"
+	"image"
+	"image/color"
+
+	"github.com/jonathanpittman/tiff"
+)
+
 /* Baseline RGB
 
 Differences from Palette Color Images
@@ -33,7 +41,36 @@ Required Fields
 
 */
 
-type FullColorRGB struct {
-	Grayscale
-	SamplesPerPixel uint16 `tifftag:"id=277"`
+type fullColorRGBDecoder struct {
+	grayscaleDecoder `tiff:"ifd"`
+	SamplesPerPixel  uint16 `tiff:"field,tag=277"`
+}
+
+func (rgbDec *fullColorRGBDecoder) Image() (image.Image, error) {
+	if rgbDec.img == nil {
+		return nil, fmt.Errorf("tiff/image: no baseline rgb image found")
+	}
+	return rgbDec.img, nil
+}
+
+func (rgbDec *fullColorRGBDecoder) Config() (cfg image.Config, err error) {
+	cfg.Height = int(rgbDec.ImageLength)
+	cfg.Width = int(rgbDec.ImageWidth)
+	cfg.ColorModel = color.RGBAModel
+	return
+}
+
+type FullColorRGB struct{}
+
+func (FullColorRGB) Decoder(ifd tiff.IFD, br tiff.BReader) (dec Decoder, err error) {
+	rgbDec := &fullColorRGBDecoder{grayscaleDecoder: grayscaleDecoder{bilevelDecoder: bilevelDecoder{br: br}}}
+	if err = tiff.UnmarshalIFD(ifd, rgbDec); err != nil {
+		return
+	}
+	fmt.Printf("rgb: %#v\n", rgbDec)
+	return rgbDec, nil
+}
+
+func (FullColorRGB) CanHandle(ifd tiff.IFD) bool {
+	return new(Grayscale).CanHandle(ifd) && ifd.HasField(277)
 }
