@@ -1,4 +1,4 @@
-package tiff
+package tiff // import "jonathanpittman.com/tiff"
 
 import (
 	"encoding/json"

@@ -1,4 +1,4 @@
-package tiff
+package tiff // import "jonathanpittman.com/tiff"
 
 // A Field is primarily comprised of an Entry.  If the Entry's value is actually
 // an offset to the data that the entry describes, then the Field will contain

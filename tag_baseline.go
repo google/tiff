@@ -1,4 +1,4 @@
-package tiff
+package tiff // import "jonathanpittman.com/tiff"
 
 // TODO: Pass in the slice of valid FieldType for each tag.
 
