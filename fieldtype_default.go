@@ -103,7 +103,7 @@ From [TIFF6]:
 	7  = UNDEFINED	An 8-bit byte that may contain anything, depending on the definition of the field.
 	8  = SSHORT	A 16-bit (2-byte) signed (twos-complement) integer.
 	9  = SLONG	A 32-bit (4-byte) signed (twos-complement) integer.
-	10 = SRATIONAL	Two SLONG’s: the first represents the numerator of a fraction, the second the denominator.
+	10 = SRATIONAL	Two SLONGs: the first represents the numerator of a fraction, the second the denominator.
 	11 = FLOAT	Single precision (4-byte) IEEE format.
 	12 = DOUBLE	Double precision (8-byte) IEEE format.
 From [BIGTIFFDESIGN]:
@@ -121,39 +121,43 @@ From [BIGTIFFDESIGN]:
 // Default set of Field types.  These are exported for others to use in
 // registering custom tags.
 var (
-	FTByte      = NewFieldType(1, "BYTE", 1, false, reprByte, rvalByte, typByte)
+	FTByte      = NewFieldType(1, "Byte", 1, false, reprByte, rvalByte, typByte)
 	FTAscii     = NewFieldType(2, "ASCII", 1, false, reprASCII, rvalASCII, typString)
-	FTShort     = NewFieldType(3, "SHORT", 2, false, reprShort, rvalShort, typU16)
-	FTLong      = NewFieldType(4, "LONG", 4, false, reprLong, rvalLong, typU32)
-	FTRational  = NewFieldType(5, "RATIONAL", 8, false, reprRational, rvalRational, typBigRat)
-	FTSByte     = NewFieldType(6, "SBYTE", 1, true, reprSByte, rvalSByte, typI8)
-	FTUndefined = NewFieldType(7, "UNDEFINED", 1, false, reprByte, rvalByte, typByte)
-	FTSShort    = NewFieldType(8, "SSHORT", 2, true, reprSShort, rvalSShort, typI16)
-	FTSLong     = NewFieldType(9, "SLONG", 4, true, reprSLong, rvalSLong, typI32)
-	FTSRational = NewFieldType(10, "SRATIONAL", 8, true, reprSRational, rvalSRational, typBigRat)
-	FTFloat     = NewFieldType(11, "FLOAT", 4, true, reprFloat, rvalFloat, typF32)
-	FTDouble    = NewFieldType(12, "DOUBLE", 8, true, reprDouble, rvalDouble, typF64)
+	FTShort     = NewFieldType(3, "Short", 2, false, reprShort, rvalShort, typU16)
+	FTLong      = NewFieldType(4, "Long", 4, false, reprLong, rvalLong, typU32)
+	FTRational  = NewFieldType(5, "Rational", 8, false, reprRational, rvalRational, typBigRat)
+	FTSByte     = NewFieldType(6, "SByte", 1, true, reprSByte, rvalSByte, typI8)
+	FTUndefined = NewFieldType(7, "Undefined", 1, false, reprByte, rvalByte, typByte)
+	FTSShort    = NewFieldType(8, "SShort", 2, true, reprSShort, rvalSShort, typI16)
+	FTSLong     = NewFieldType(9, "SLong", 4, true, reprSLong, rvalSLong, typI32)
+	FTSRational = NewFieldType(10, "SRational", 8, true, reprSRational, rvalSRational, typBigRat)
+	FTFloat     = NewFieldType(11, "Float", 4, true, reprFloat, rvalFloat, typF32)
+	FTDouble    = NewFieldType(12, "Double", 8, true, reprDouble, rvalDouble, typF64)
 	FTIFD       = NewFieldType(13, "IFD", 4, false, reprLong, rvalLong, typU32)
 
 	// TODO: These two are not complete.  Get the details and finish them.
-	// For now, represent them as bytes until a proper representation is known.
-	FTUnicode = NewFieldType(14, "UNICODE", 1, false, reprByte, rvalByte, typByte)
-	FTComplex = NewFieldType(15, "COMPLEX", 1, true, reprByte, rvalByte, typByte)
+	FTUnicode = NewFieldType(14, "Unicode", 2, false, reprByte, rvalByte, typByte)
+	FTComplex = NewFieldType(15, "Complex", 8, true, reprByte, rvalByte, typByte)
 )
 
 /*
 Regarding UNICODE and COMPLEX field types:
-  UNICODE: It is thought that it is intended for UNICODE to be represented by a
-  32bit integer value.  It is NOT KNOWN whether this should be signed or
-  unsigned.  In go terms, this would either be an int32 or uint32.  The size
-  would then be 4 instead of 1.  In tiff terms this would mirror either a LONG
-  or an SLONG.
+  UNICODE:  In dng_sdk_1_4/dng_sdk/source/dng_tag_types.cpp and in
+  dng_sdk_1_4/dng_sdk/source/dng_image_writer.cpp, ttUnicode is defined to
+  have a size of 2.  It is not clear if this was based on the original
+  16 bit Unicode or should be treated as UTF-16 to handle Unicode 2.0.
 
-  COMPLEX: It is thought that it is intended for COMPLEX to be represented by
-  two float32 values with the real part followed by the imaginary part in the
-  byte stream.  In go terms this would mirror a complex64.  The size would then
-  be 8 instead of 1.  In tiff terms this would be two FLOAT types in a similar
-  way that a RATIONAL is two LONGs.
+  COMPLEX:  In dng_sdk_1_4/dng_sdk/source/dng_tag_types.cpp, ttComplex is
+  defined to have a size of 8.  However, in
+  dng_sdk_1_4/dng_sdk/source/dng_image_writer.cpp ttComplex is said to have a
+  size of 4 bytes. The file dng_image_writer.cpp also indicates a size of 4
+  bytes for Rational and SRational, which we know to be made up of two 4 byte
+  parts.  Since a complex is most likely made up of two 32bit floating point
+  values, we are going with 8 for the size of a complex.  It is thought that it
+  is intended for COMPLEX to be represented by two float32 values with the real
+  part followed by the imaginary part in the byte stream.  In go terms this
+  would mirror a complex64.  In tiff terms this would be two FLOAT types in a
+  similar way that a RATIONAL is two LONGs.
 */
 
 // DefaultFieldTypeSet is the default set of field types supported by this
