@@ -144,8 +144,8 @@ var (
 Regarding UNICODE and COMPLEX field types:
   UNICODE:  In dng_sdk_1_4/dng_sdk/source/dng_tag_types.cpp and in
   dng_sdk_1_4/dng_sdk/source/dng_image_writer.cpp, ttUnicode is defined to
-  have a size of 2.  It is not clear if this was based on the original
-  16 bit Unicode or should be treated as UTF-16 to handle Unicode 2.0.
+  have a size of 2. In dng_image_writer.cpp, it appears unicode text is encoded
+  with UTF-16.
 
   COMPLEX:  In dng_sdk_1_4/dng_sdk/source/dng_tag_types.cpp, ttComplex is
   defined to have a size of 8.  However, in
