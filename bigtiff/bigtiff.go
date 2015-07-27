@@ -1,10 +1,10 @@
-package bigtiff
+package bigtiff // import "jonathanpittman.com/tiff/bigtiff"
 
 import (
 	"fmt"
 	"io"
 
-	"github.com/jonathanpittman/tiff"
+	"jonathanpittman.com/tiff"
 )
 
 const (

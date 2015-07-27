@@ -1,14 +1,14 @@
-package image
+package image // import "jonathanpittman.com/tiff/image"
 
 import (
 	"fmt"
 	"image"
 	"io"
 
-	"github.com/jonathanpittman/tiff"
+	"jonathanpittman.com/tiff"
 
-	"github.com/jonathanpittman/tiff/bigtiff"
-	"github.com/jonathanpittman/tiff/tiff85"
+	"jonathanpittman.com/tiff/bigtiff"
+	"jonathanpittman.com/tiff/tiff85"
 )
 
 type Decoder interface {

@@ -1,4 +1,4 @@
-package image
+package image // import "jonathanpittman.com/tiff/image"
 
 // uint16Slice implements the sort.Sorter interface for a []uint16.
 type uint16Slice []uint16

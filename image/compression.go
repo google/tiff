@@ -1,4 +1,4 @@
-package image
+package image // import "jonathanpittman.com/tiff/image"
 
 import (
 	"fmt"

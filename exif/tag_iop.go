@@ -1,6 +1,6 @@
-package exif
+package exif // import "jonathanpittman.com/tiff/exif"
 
-import "github.com/jonathanpittman/tiff"
+import "jonathanpittman.com/tiff"
 
 const InteroperabilityIFDTagID = 40965
 

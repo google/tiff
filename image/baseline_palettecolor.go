@@ -1,11 +1,11 @@
-package image
+package image // import "jonathanpittman.com/tiff/image"
 
 import (
 	"fmt"
 	"image"
 	"image/color"
 
-	"github.com/jonathanpittman/tiff"
+	"jonathanpittman.com/tiff"
 )
 
 /* Baseline Palette-Color

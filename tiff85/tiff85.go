@@ -1,7 +1,7 @@
 // Package tiff85 provides parsing for a tiff file with a version number of 85.
-package tiff85
+package tiff85 // import "jonathanpittman.com/tiff/tiff85"
 
-import "github.com/jonathanpittman/tiff"
+import "jonathanpittman.com/tiff"
 
 const (
 	MagicBigEndian        = "MM\x00\x55"

@@ -1,4 +1,4 @@
-package bigtiff
+package bigtiff // import "jonathanpittman.com/tiff/bigtiff"
 
 import (
 	"encoding/binary"
@@ -7,7 +7,7 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/jonathanpittman/tiff"
+	"jonathanpittman.com/tiff"
 )
 
 // A Field is primarily comprised of an Entry.  If the Entry's value is actually

@@ -1,6 +1,6 @@
-package dng
+package dng // import "jonathanpittman.com/tiff/dng"
 
-import "github.com/jonathanpittman/tiff"
+import "jonathanpittman.com/tiff"
 
 var (
 	DNGv1_0_0_0Tags = tiff.NewTagSet("DNGv1.0.0.0", 32768, 65535)

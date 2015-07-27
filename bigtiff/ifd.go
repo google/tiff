@@ -1,4 +1,4 @@
-package bigtiff
+package bigtiff // import "jonathanpittman.com/tiff/bigtiff"
 
 import (
 	"bytes"
@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"text/tabwriter"
 
-	"github.com/jonathanpittman/tiff"
+	"jonathanpittman.com/tiff"
 )
 
 type imageFileDirectory struct {

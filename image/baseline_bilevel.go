@@ -1,4 +1,4 @@
-package image
+package image // import "jonathanpittman.com/tiff/image"
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"image/color"
 	"math/big"
 
-	"github.com/jonathanpittman/tiff"
+	"jonathanpittman.com/tiff"
 )
 
 /* Baseline Bilevel

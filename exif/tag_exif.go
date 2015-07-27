@@ -1,6 +1,6 @@
-package exif
+package exif // import "jonathanpittman.com/tiff/exif"
 
-import "github.com/jonathanpittman/tiff"
+import "jonathanpittman.com/tiff"
 
 // http://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
 // http://www.exiv2.org/tags.html

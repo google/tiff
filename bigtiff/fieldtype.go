@@ -1,11 +1,11 @@
-package bigtiff
+package bigtiff // import "jonathanpittman.com/tiff/bigtiff"
 
 import (
 	"encoding/binary"
 	"fmt"
 	"reflect"
 
-	"github.com/jonathanpittman/tiff"
+	"jonathanpittman.com/tiff"
 )
 
 /* Field type definitions

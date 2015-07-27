@@ -1,11 +1,11 @@
-package image
+package image // import "jonathanpittman.com/tiff/image"
 
 import (
 	"bytes"
 	"sort"
 	"sync"
 
-	"github.com/jonathanpittman/tiff"
+	"jonathanpittman.com/tiff"
 )
 
 var (

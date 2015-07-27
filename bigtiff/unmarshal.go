@@ -1,11 +1,11 @@
-package bigtiff
+package bigtiff // import "jonathanpittman.com/tiff/bigtiff"
 
 import (
 	"fmt"
 	"log"
 	"reflect"
 
-	"github.com/jonathanpittman/tiff"
+	"jonathanpittman.com/tiff"
 )
 
 func UnmarshalSubIFDs(ifd tiff.IFD, br tiff.BReader, tsp tiff.TagSpace, out interface{}) error {

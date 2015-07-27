@@ -1,6 +1,6 @@
-package tiffep
+package tiffep // import "jonathanpittman.com/tiff/tiffep"
 
-import "github.com/jonathanpittman/tiff"
+import "jonathanpittman.com/tiff"
 
 var tiffEPTags = tiff.NewTagSet("TIFF/EP", 32768, 65535)
 

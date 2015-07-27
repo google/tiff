@@ -1,6 +1,6 @@
-package geotiff
+package geotiff // import "jonathanpittman.com/tiff/geotiff"
 
-import "github.com/jonathanpittman/tiff"
+import "jonathanpittman.com/tiff"
 
 var geotiffTags = tiff.NewTagSet("GeoTIFF", 32768, 65535)
 

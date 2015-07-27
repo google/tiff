@@ -1,11 +1,11 @@
-package exif
+package exif // import "jonathanpittman.com/tiff/exif"
 
 import (
 	"fmt"
 	"io"
 	"log"
 
-	"github.com/jonathanpittman/tiff"
+	"jonathanpittman.com/tiff"
 )
 
 func Parse(r io.Reader) (eIFD, gIFD, ioIFD tiff.IFD, err error) {

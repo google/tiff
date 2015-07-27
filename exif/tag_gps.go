@@ -1,9 +1,9 @@
-package exif
+package exif // import "jonathanpittman.com/tiff/exif"
 
 import (
 	"math/big"
 
-	"github.com/jonathanpittman/tiff"
+	"jonathanpittman.com/tiff"
 )
 
 const GPSIFDTagID = 34853
