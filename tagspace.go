@@ -179,3 +179,14 @@ func GetTagSpace(name string) TagSpace {
 	defer allTagSpaceMap.mu.RUnlock()
 	return allTagSpaceMap.list[name]
 }
+
+func ListTagSpaceNames() []string {
+	allTagSpaceMap.mu.RLock()
+	defer allTagSpaceMap.mu.RUnlock()
+	names := make([]string, 0, len(allTagSpaceMap.list))
+	for k := range allTagSpaceMap.list {
+		names = append(names, k)
+	}
+	sort.Strings(names)
+	return names
+}
