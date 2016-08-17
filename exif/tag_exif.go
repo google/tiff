@@ -18,6 +18,7 @@ package exif // import "jonathanpittman.com/tiff/exif"
 
 import (
 	"math/big"
+	"strings"
 
 	"jonathanpittman.com/tiff"
 )
@@ -76,11 +77,26 @@ func fiRat(f tiff.Field) string {
 	return f.Type().Valuer()(f.Value().Bytes(), f.Value().Order()).Interface().(*big.Rat).String()
 }
 
+// fiRatAsFloat displays a rational as a float with 2 decimal points.
+func fiRatAsFloat(f tiff.Field) string {
+	return f.Type().Valuer()(f.Value().Bytes(), f.Value().Order()).Interface().(*big.Rat).FloatString(2)
+}
+
+/* The purpose of this is to do:
+"0.95" -> "f/0.95"
+"2.80" -> "f/2.8"
+"4.00" -> "f/4"
+*/
+// fiFNumber displays an ƒ/stop value in the form f/n.nn, f/n.n, or f/n.
+func fiFNumber(f tiff.Field) string {
+	return "f/" + strings.TrimSuffix(strings.TrimRight(fiRatAsFloat(f), "0"), ".")
+}
+
 func init() {
 	tiff.PrivateTags.Register(exifIFDTag)
 
 	exifTags.Register(tiff.NewTag(33434, "ExposureTime", fiRat))
-	exifTags.Register(tiff.NewTag(33437, "FNumber", nil))
+	exifTags.Register(tiff.NewTag(33437, "FNumber", fiFNumber))
 	exifTags.Register(tiff.NewTag(34850, "ExposureProgram", nil))
 	exifTags.Register(tiff.NewTag(34852, "SpectralSensitivity", nil))
 	exifTags.Register(tiff.NewTag(34855, "ISOSpeedRatings", nil))
