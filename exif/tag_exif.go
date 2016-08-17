@@ -16,12 +16,20 @@ limitations under the License.
 
 package exif // import "jonathanpittman.com/tiff/exif"
 
-import "jonathanpittman.com/tiff"
+import (
+	"math/big"
 
-// http://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
-// http://www.exiv2.org/tags.html
-// http://www.cipa.jp/exifprint/index_e.html
-// http://www.jeita.or.jp/cgi-bin/standard_e/list.cgi?cateid=1&subcateid=4
+	"jonathanpittman.com/tiff"
+)
+
+/*
+http://www.awaresystems.be/imaging/tiff/tifftags/privateifd/exif.html
+http://www.exiv2.org/tags.html
+http://www.cipa.jp/exifprint/index_e.html
+http://www.cipa.jp/std/documents/e/DC-008-2012_E.pdf
+http://www.cipa.jp/std/documents/e/DC-008-Translation-2016-E.pdf
+http://www.jeita.or.jp/cgi-bin/standard_e/list.cgi?cateid=1&subcateid=4
+*/
 
 const ExifIFDTagID = 34665
 
@@ -31,15 +39,47 @@ var (
 	exifIFDTag   = tiff.NewTag(ExifIFDTagID, "ExifIFD", nil)
 )
 
-// TODO: Break up these exif tags into sets based on the exif version.  They
-//       still all likely belong in the same space though.  For an example, take
-//       a look at the way DNG was broken up.  Tags introduced in newer versions
-//       are added to a set named for the version.  They still all get put into
-//       the same space, just the sets are identified separately.
+/*
+TODO: Break up these exif tags into sets based on the exif version.  They
+still all likely belong in the same space though.  For an example, take
+a look at the way DNG was broken up.  Tags introduced in newer versions
+are added to a set named for the version.  They still all get put into
+the same space, just the sets are identified separately.
+*/
+
+/*
+TODO: Break up tags into categories
+From TIFF:
+  A. Tags relating to image data structure
+  B. Tags relating to recording offset
+  C. Tags relating to image data characteristics
+  D. Other tags
+From EXIF:
+  A. Tags Relating to Version
+  B. Tag Relating to Image Data Characteristics
+  C. Tags Relating to Image Configuration
+  D. Tags Relating to User Information
+  E. Tag Relating to Related File Information
+  F. Tags Relating to Date and Time
+  G. Tags Relating to Picture-Taking Conditions
+  G2. Tags Relating to shooting situation
+  H. Other Tags
+From GPS:
+  A. Tags Relating to GPS
+From Interoperability:
+  A. Attached Information Related to Interoperability
+*/
+
+// fiRat displays rationals (fractions) in n/d notation.  It assumes the
+// underlying Go type is a *big.Rat.  This can be better.
+func fiRat(f tiff.Field) string {
+	return f.Type().Valuer()(f.Value().Bytes(), f.Value().Order()).Interface().(*big.Rat).String()
+}
+
 func init() {
 	tiff.PrivateTags.Register(exifIFDTag)
 
-	exifTags.Register(tiff.NewTag(33434, "ExposureTime", nil))
+	exifTags.Register(tiff.NewTag(33434, "ExposureTime", fiRat))
 	exifTags.Register(tiff.NewTag(33437, "FNumber", nil))
 	exifTags.Register(tiff.NewTag(34850, "ExposureProgram", nil))
 	exifTags.Register(tiff.NewTag(34852, "SpectralSensitivity", nil))
