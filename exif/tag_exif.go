@@ -82,14 +82,37 @@ func fiRatAsFloat(f tiff.Field) string {
 	return f.Type().Valuer()(f.Value().Bytes(), f.Value().Order()).Interface().(*big.Rat).FloatString(2)
 }
 
-/* The purpose of this is to do:
-"0.95" -> "f/0.95"
-"2.80" -> "f/2.8"
-"4.00" -> "f/4"
+/* f/Stop formatting:
+The purpose of this is to do:
+  "0.95" -> "f/0.95"
+  "2.80" -> "f/2.8"
+  "4.00" -> "f/4"
 */
 // fiFNumber displays an ƒ/stop value in the form f/n.nn, f/n.n, or f/n.
 func fiFNumber(f tiff.Field) string {
 	return "f/" + strings.TrimSuffix(strings.TrimRight(fiRatAsFloat(f), "0"), ".")
+}
+
+// ExposureProgram value names.  In the future, this may need to be a map if
+// index values are skipped.
+var exposureProgramVals = [...]string{
+	"Not defined",       // 0
+	"Manual",            // 1
+	"Normal program",    // 2
+	"Aperture priority", // 3
+	"Shutter priority",  // 4
+	"Creative program",  // 5 (biased toward depth of field)
+	"Action program",    // 6 (biased toward fast shutter speed)
+	"Portrait mode",     // 7 (for closeup photos with the background out of focus)
+	"Landscape mode",    // 8 (for landscape photos with the background in focus)
+}
+
+func fiExposureProgram(f tiff.Field) string {
+	prog := f.Type().Valuer()(f.Value().Bytes(), f.Value().Order()).Uint()
+	if prog >= uint64(len(exposureProgramVals)) {
+		return ""
+	}
+	return exposureProgramVals[prog]
 }
 
 func init() {
@@ -97,7 +120,7 @@ func init() {
 
 	exifTags.Register(tiff.NewTag(33434, "ExposureTime", fiRat))
 	exifTags.Register(tiff.NewTag(33437, "FNumber", fiFNumber))
-	exifTags.Register(tiff.NewTag(34850, "ExposureProgram", nil))
+	exifTags.Register(tiff.NewTag(34850, "ExposureProgram", fiExposureProgram))
 	exifTags.Register(tiff.NewTag(34852, "SpectralSensitivity", nil))
 	exifTags.Register(tiff.NewTag(34855, "ISOSpeedRatings", nil))
 	exifTags.Register(tiff.NewTag(34856, "OECF", nil))
