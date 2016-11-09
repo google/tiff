@@ -1,4 +1,4 @@
-tiff [![GoDoc](https://godoc.org/jonathanpittman.com/tiff?status.svg)](https://godoc.org/jonathanpittman.com/tiff)
+tiff [![GoDoc](https://godoc.org/github.com/google/tiff?status.svg)](https://godoc.org/github.com/google/tiff)
 ====
 
 Go package for working with the TIFF file structure.
