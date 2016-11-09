@@ -3,9 +3,9 @@
 // license that can be found in the LICENSE file.
 
 // Package tiff85 provides parsing for a tiff file with a version number of 85.
-package tiff85 // import "jonathanpittman.com/tiff/tiff85"
+package tiff85
 
-import "jonathanpittman.com/tiff"
+import "github.com/google/tiff"
 
 const (
 	MagicBigEndian        = "MM\x00\x55"

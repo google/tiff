@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package exif // import "jonathanpittman.com/tiff/exif"
+package exif
 
 import (
 	"fmt"
 	"io"
 	"log"
 
-	"jonathanpittman.com/tiff"
+	"github.com/google/tiff"
 )
 
 func Parse(r io.Reader) (eIFD, gIFD, ioIFD tiff.IFD, err error) {

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package bigtiff // import "jonathanpittman.com/tiff/bigtiff"
+package bigtiff
 
 import (
 	"encoding/binary"
@@ -11,7 +11,7 @@ import (
 	"reflect"
 	"sync"
 
-	"jonathanpittman.com/tiff"
+	"github.com/google/tiff"
 )
 
 // A Field is primarily comprised of an Entry.  If the Entry's value is actually

@@ -4,9 +4,9 @@
 
 // Package modi provides tiff extensions for working with Microsoft Office
 // Document Imaging based tiff files.
-package modi // import "jonathanpittman.com/tiff/modi"
+package modi
 
-import "jonathanpittman.com/tiff"
+import "github.com/google/tiff"
 
 var modiTags = tiff.NewTagSet("MODI", 32768, 65535)
 

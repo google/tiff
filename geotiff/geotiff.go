@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package geotiff // import "jonathanpittman.com/tiff/geotiff"
+package geotiff
 
-import "jonathanpittman.com/tiff"
+import "github.com/google/tiff"
 
 var geotiffTags = tiff.NewTagSet("GeoTIFF", 32768, 65535)
 

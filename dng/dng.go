@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package dng // import "jonathanpittman.com/tiff/dng"
+package dng
 
-import "jonathanpittman.com/tiff"
+import "github.com/google/tiff"
 
 var (
 	DNGv1_0_0_0Tags = tiff.NewTagSet("DNGv1.0.0.0", 32768, 65535)

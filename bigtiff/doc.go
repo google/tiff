@@ -9,4 +9,4 @@ References:
   [BIGTIFF]:       http://www.awaresystems.be/imaging/tiff/bigtiff.html
   [BIGTIFFDESIGN]: http://www.remotesensing.org/libtiff/bigtiffdesign.html
 */
-package bigtiff // import "jonathanpittman.com/tiff/bigtiff"
+package bigtiff

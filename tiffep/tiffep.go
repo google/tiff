@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package tiffep // import "jonathanpittman.com/tiff/tiffep"
+package tiffep
 
-import "jonathanpittman.com/tiff"
+import "github.com/google/tiff"
 
 var tiffEPTags = tiff.NewTagSet("TIFF/EP", 32768, 65535)
 

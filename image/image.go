@@ -2,17 +2,16 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package image // import "jonathanpittman.com/tiff/image"
+package image
 
 import (
 	"fmt"
 	"image"
 	"io"
 
-	"jonathanpittman.com/tiff"
-
-	"jonathanpittman.com/tiff/bigtiff"
-	"jonathanpittman.com/tiff/tiff85"
+	"github.com/google/tiff"
+	"github.com/google/tiff/bigtiff"
+	"github.com/google/tiff/tiff85"
 )
 
 type Decoder interface {

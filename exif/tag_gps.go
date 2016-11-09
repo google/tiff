@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package exif // import "jonathanpittman.com/tiff/exif"
+package exif
 
 import (
 	"math/big"
 
-	"jonathanpittman.com/tiff"
+	"github.com/google/tiff"
 )
 
 const GPSIFDTagID = 34853

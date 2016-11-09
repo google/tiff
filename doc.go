@@ -10,4 +10,4 @@ References:
   [TIFFPM6]:       http://partners.adobe.com/public/developer/en/tiff/TIFFPM6.pdf
   [TIFFTAGS]:      http://www.digitalpreservation.gov/formats/content/tiff_tags.shtml
 */
-package tiff // import "jonathanpittman.com/tiff"
+package tiff

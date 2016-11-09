@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package tiff // import "jonathanpittman.com/tiff"
+package tiff
 
 // A Field is primarily comprised of an Entry.  If the Entry's value is actually
 // an offset to the data that the entry describes, then the Field will contain

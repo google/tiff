@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package bigtiff // import "jonathanpittman.com/tiff/bigtiff"
+package bigtiff
 
 import (
 	"encoding/binary"
 	"fmt"
 	"reflect"
 
-	"jonathanpittman.com/tiff"
+	"github.com/google/tiff"
 )
 
 /* Field type definitions

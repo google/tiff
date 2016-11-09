@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package exif // import "jonathanpittman.com/tiff/exif"
+package exif
 
-import "jonathanpittman.com/tiff"
+import "github.com/google/tiff"
 
 const InteroperabilityIFDTagID = 40965
 

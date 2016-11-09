@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package image // import "jonathanpittman.com/tiff/image"
+package image
 
 // uint16Slice implements the sort.Sorter interface for a []uint16.
 type uint16Slice []uint16
