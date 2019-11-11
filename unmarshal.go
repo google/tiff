@@ -561,7 +561,7 @@ func unmarshalVal(data []byte, bo binary.ByteOrder, ft FieldType, v reflect.Valu
 			return ErrUnsuppConversion{ft, typ}
 		}
 		v.SetInt(i64)
-	case reflect.Uint8, reflect.Int8, reflect.Float32, reflect.Float64:
+	default:
 		// If this was not handled at the top, we do not support
 		// converting other types to these types.
 		return ErrUnsuppConversion{ft, typ}
